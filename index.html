@@ -1,1 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Galaxy Strike - Advanced</title>
+<style>
+  body, html {
+    margin: 0; padding: 0; overflow: hidden; background: black;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    user-select: none;
+    -webkit-user-select:none;
+    -webkit-touch-callout:none;
+  }
+  canvas {
+    display: block;
+    background: black;
+  }
+  #ui {
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    pointer-events: none;
+  }
+  #healthContainer {
+    position: absolute;
+    top: 10px; left: 20px;
+    pointer-events: none;
+    user-select: none;
+  }
+  #healthText {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  #healthBar {
+    width: 180px;
+    height: 18px;
+    background: darkred;
+    border: 2px solid white;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  #healthFill {
+    height: 100%;
+    background: red;
+    width: 100%;
+    transition: width 0.2s ease-out;
+  }
+  #levelText {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    font-size: 20px;
+    pointer-events: none;
+  }
+  #scoreText {
+    position: absolute;
+    bottom: 10px;
+    left: 20px;
+    font-weight: bold;
+    font-size: 18px;
+    pointer-events: none;
+  }
+  #gameOverScreen {
+    display: none;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.85);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    z-index: 5;
+    user-select:none;
+  }
+  #gameOverScreen p {
+    font-size: 24px;
+    margin: 10px 0;
+  }
+  #gameOverScreen button {
+    background: #007bff;
+    border: none;
+    padding: 10px 18px;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  #gameOverScreen button:hover {
+    background: #0056b3;
+  }
 
+  /* Mobile touch controls container */
+  #touchControls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 140px;
+    height: 140px;
+    z-index: 10;
+  }
+  #joystickBase {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    touch-action: none;
+  }
+  #joystickStick {
+    position: absolute;
+    bottom: 40px; left: 40px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    touch-action: none;
+    transition: 0.1s;
+  }
+  #shootButton {
+    position: absolute;
+    bottom: 40px;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 0, 0, 0.7);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 60px;
+    font-weight: bold;
+    font-size: 18px;
+    user-select:none;
+    touch-action: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="ui">
+  <div id="healthContainer">
+    <div id="healthText">Health</div>
+    <div id="healthBar"><div id="healthFill"></div></div>
+  </div>
+  <div id="levelText">Level: 1</div>
+  <div id="scoreText">Score: 0</div>
+</div>
+
+<div id="gameOverScreen">
+  <p>💥 Game Over!</p>
+  <p>Your Score: <span id="finalScore">0</span></p>
+  <button onclick="location.reload()">Restart</button>
+</div>
+
+<!-- Mobile Touch Controls -->
+<div id="touchControls">
+  <div id="joystickBase"></div>
+  <div id="joystickStick"></div>
+  <div id="shootButton">Shoot</div>
+</div>
+
+<!-- Sounds -->
+<audio id="shootSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+<audio id="explosionSound" src="https://www.soundjay.com/explosion/sounds/explosion-01.mp3" preload="auto"></audio>
+<audio id="powerupSound" src="https://www.soundjay.com/button/sounds/button-16.mp3" preload="auto"></audio>
+<audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop preload="auto"></audio>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  // UI Elements
+  const healthFill = document.getElementById('healthFill');
+  const levelText = document.getElementById('levelText');
+  const scoreText = document.getElementById('scoreText');
+  const finalScoreText = document.getElementById('finalScore');
+  const gameOverScreen = document.getElementById('gameOverScreen');
+
+  // Sounds
+  const shootSound = document.getElementById('shootSound');
+  const explosionSound = document.getElementById('explosionSound');
+  const powerupSound = document.getElementById('powerupSound');
+  const bgMusic = document.getElementById('bgMusic');
+  bgMusic.volume = 0.3;
+  bgMusic.play();
+
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  // Game State
+  let score = 0;
+  let level = 1;
+  let health = 20;
+  let gameOver = false;
+  let frameCount = 0;
+
+  // Controls
+  let keys = {};
+  document.addEventListener('keydown', e => {
+    keys[e.key.toLowerCase()] = true;
+  });
+  document.addEventListener('keyup', e => {
+    keys[e.key.toLowerCase()] = false;
+  });
+
+  // Touch controls variables
+  const joystickBase = document.getElementById('joystickBase');
+  const joystickStick = document.getElementById('joystickStick');
+  const shootButton = document.getElementById('shootButton');
+  let joystickTouchId = null;
+  let joystickPos = {x: 0, y: 0};
+  let joystickVector = {x: 0, y: 0};
+  let shootingTouchId = null;
+  let shootingActive = false;
+
+  // Player Object
+  const player = {
+    x: width / 2,
+    y: height - 80,
+    width: 40,
+    height: 60,
+    speed: 5,
+    rapidFire: false,
+    rapidFireEnd: 0,
+    shield: false,
+    shieldEnd: 0,
+  };
+
+  // Stars for background
+  const starLayers = [
+    {stars: [], speed: 0.5, count: 50, sizeMax: 1},
+    {stars: [], speed: 1.2, count: 30, sizeMax: 1.5},
+    {stars: [], speed: 2, count: 20, sizeMax: 2.5},
+  ];
+
+  starLayers.forEach(layer => {
+    for(let i=0; i<layer.count; i++) {
+      layer.stars.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * layer.sizeMax
+      });
+    }
+  });
+
+  // Bullets and enemies
+  const bullets = [];
+  const enemies = [];
+  const enemyBullets = [];
+  const explosions = [];
+  const powerups = [];
+  const bosses = [];
+
+  // Utility funcs
+  function randomRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  // Create Player Bullet from tip of spaceship
+  function playerShoot() {
+    if(gameOver) return;
+    if(frameCount < player.rapidFireEnd || !player.rapidFire) {
+      shootSound.currentTime = 0;
+      shootSound.play();
+      bullets.push({
+        x: player.x,
+        y: player.y - player.height/2,
+        size: 6,
+        speed: 12,
+      });
+    }
+  }
+
+  // Enemy Shoot
+  function enemyShoot(enemy) {
+    enemyBullets.push({
+      x: enemy.x,
+      y: enemy.y + enemy.size / 2,
+      size: 6,
+      speed: 5,
+    });
+  }
+
+  // Boss Shoot Pattern (three bullets spread)
+  function bossShoot(boss) {
+    const spread = 15;
+    enemyBullets.push({x: boss.x, y: boss.y + boss.size/2, size: 6, speedX: 0, speedY: 5});
+    enemyBullets.push({x: boss.x - spread, y: boss.y + boss.size/2, size: 6, speedX: -2, speedY: 5});
+    enemyBullets.push({x: boss.x + spread, y: boss.y + boss.size/2, size: 6, speedX: 2, speedY: 5});
+  }
+
+  // Explosion effect
+  function createExplosion(x,y) {
+    explosions.push({x,y,r:0,maxR:30});
+    explosionSound.currentTime = 0;
+    explosionSound.play();
+  }
+
+  // Spawn enemy normal
+  function spawnEnemy() {
+    const size = 40;
+    enemies.push({
+      x: randomRange(size/2, width - size/2),
+      y: -size,
+      size,
+      speed: 1 + level * 0.2,
+      shootTimer: 0,
+      shootInterval: 120 + Math.random() * 60,
+    });
+  }
+
+  // Spawn powerup (shield or rapid-fire)
+  function spawnPowerup() {
+    const size = 25;
+    const type = Math.random() < 0.5 ? 'shield' : 'rapidFire';
+    powerups.push({
+      x: randomRange(size, width - size),
+      y: -size,
+      size,
+      speed: 1.5,
+      type,
+    });
+  }
+
+  // Spawn boss after every 10 levels
+  function spawnBoss() {
+    const size = 120;
+    bosses.push({
+      x: width / 2,
+      y: -size,
+      size,
+      speed: 1,
+      health: 50 + level * 20,
+      shootTimer: 0,
+      shootInterval: 90,
+      direction: 1,
+    });
+  }
+
+  // Check collision helpers
+  function dist(x1,y1,x2,y2) {
+    return Math.hypot(x1-x2,y1-y2);
+  }
+
+  function rectCircleColliding(circle, rect) {
+    // circle = {x,y,r}, rect = {x,y,w,h}
+    let distX = Math.abs(circle.x - rect.x - rect.w/2);
+    let distY = Math.abs(circle.y - rect.y - rect.h/2);
+
+    if(distX > (rect.w/2 + circle.r)) return false;
+    if(distY > (rect.h/2 + circle.r)) return false;
+
+    if(distX <= (rect.w/2)) return true;
+    if(distY <= (rect.h/2)) return true;
+
+    let dx=distX - rect.w/2;
+    let dy=distY - rect.h/2;
+    return (dx*dx + dy*dy <= (circle.r*circle.r));
+  }
+
+  // Touch joystick logic
+  function handleJoystickTouchStart(e) {
+    for(let touch of e.changedTouches){
+      if(joystickTouchId === null && touch.target === joystickBase){
+        joystickTouchId = touch.identifier;
+        joystickPos.x = touch.pageX;
+        joystickPos.y = touch.pageY;
+        joystickStick.style.transition = '0s';
+      }
+    }
+  }
+  function handleJoystickTouchMove(e) {
+    if(joystickTouchId === null) return;
+    for(let touch of e.changedTouches){
+      if(touch.identifier === joystickTouchId){
+        let dx = touch.pageX - joystickPos.x;
+        let dy = touch.pageY - joystickPos.y;
+        const maxDist = 40;
+        let dist = Math.min(maxDist, Math.hypot(dx,dy));
+        let angle = Math.atan2(dy, dx);
+        let x = Math.cos(angle)*dist;
+        let y = Math.sin(angle)*dist;
+        joystickStick.style.left = (40 + x) + 'px';
+        joystickStick.style.bottom = (40 - y) + 'px';
+
+        joystickVector.x = x/maxDist;
+        joystickVector.y = -y/maxDist; // invert y for canvas coords
+      }
+    }
+  }
+  function handleJoystickTouchEnd(e) {
+    for(let touch of e.changedTouches){
+      if(touch.identifier === joystickTouchId){
+        joystickTouchId = null;
+        joystickVector.x = 0;
+        joystickVector.y = 0;
+        joystickStick.style.transition = '0.3s';
+        joystickStick.style.left = '40px';
+        joystickStick.style.bottom = '40px';
+      }
+    }
+  }
+
+  // Touch shoot button
+  shootButton.addEventListener('touchstart', e => {
+    e.preventDefault();
+    shootingActive = true;
+  });
+  shootButton.addEventListener('touchend', e => {
+    e.preventDefault();
+    shootingActive = false;
+  });
+
+  // Spawn initial enemies and powerups
+  function initialSpawn(){
+    for(let i=0; i<5; i++) spawnEnemy();
+    spawnPowerup();
+  }
+
+  // Main update loop
+  function update() {
+    if(gameOver) return;
+
+    frameCount++;
+
+    // Update stars
+    starLayers.forEach(layer => {
+      layer.stars.forEach(s => {
+        s.y += layer.speed;
+        if(s.y > height) s.y = 0;
+      });
+    });
+
+    // Player movement from keyboard and joystick
+    let moveX = 0, moveY = 0;
+    if(keys['arrowleft'] || keys['a']) moveX -= 1;
+    if(keys['arrowright'] || keys['d']) moveX += 1;
+    if(keys['arrowup'] || keys['w']) moveY -= 1;
+    if(keys['arrowdown'] || keys['s']) moveY += 1;
+
+    // Joystick adds to movement
+    moveX += joystickVector.x;
+    moveY += joystickVector.y;
+
+    // Normalize diagonal speed
+    if(moveX !== 0 && moveY !== 0){
+      moveX *= Math.SQRT1_2;
+      moveY *= Math.SQRT1_2;
+    }
+
+    // Apply speed and clamp
+    player.x += moveX * player.speed;
+    player.y += moveY * player.speed;
+    player.x = clamp(player.x, player.width/2, width - player.width/2);
+    player.y = clamp(player.y, player.height/2, height - player.height/2);
+
+    // Shooting (keyboard space or up arrow) and touch shoot button
+    if(frameCount % (player.rapidFire ? 5 : 10) === 0) {
+      if(keys[' '] || keys['arrowup'] || shootingActive) {
+        playerShoot();
+      }
+    }
+
+    // Update bullets
+    bullets.forEach((b, i) => {
+      b.y -= b.speed;
+      if(b.y < -10) bullets.splice(i,1);
+    });
+
+    // Update enemies
+    enemies.forEach((e, i) => {
+      e.y += e.speed;
+      e.shootTimer = (e.shootTimer || 0) + 1;
+
+      // Enemy shoot
+      if(e.shootTimer > e.shootInterval){
+        enemyShoot(e);
+        e.shootTimer = 0;
+      }
+
+      // Remove if out of screen
+      if(e.y > height + e.size) enemies.splice(i,1);
+
+      // Bullet collision
+      bullets.forEach((b, j) => {
+        let distToEnemy = dist(b.x,b.y, e.x,e.y);
+        if(distToEnemy < e.size/1.5){
+          createExplosion(e.x, e.y);
+          bullets.splice(j,1);
+          enemies.splice(i,1);
+          score += 10 * level;
+          scoreText.textContent = "Score: "+score;
+        }
+      });
+
+      // Enemy passes player: no health lost (per your request)
+      if(e.y > height + e.size) enemies.splice(i,1);
+    });
+
+    // Update enemy bullets
+    enemyBullets.forEach((b,i) => {
+      b.y += b.speedY || b.speed || 5;
+      b.x += b.speedX || 0;
+
+      // Check collision with player
+      let hitRadius = player.width / 2;
+      if(dist(b.x,b.y,player.x,player.y) < b.size + hitRadius){
+        if(!player.shield){
+          health--;
+          updateHealthBar();
+          if(health <= 0){
+            gameOver = true;
+            endGame();
+          }
+        }
+        enemyBullets.splice(i,1);
+      }
+
+      // Remove if off screen
+      if(b.y > height + 10) enemyBullets.splice(i,1);
+    });
+
+    // Update explosions
+    explosions.forEach((ex, i) => {
+      ex.r += 2;
+      if(ex.r > ex.maxR) explosions.splice(i,1);
+    });
+
+    // Update powerups
+    powerups.forEach((p,i) => {
+      p.y += p.speed;
+      if(p.y > height + p.size) powerups.splice(i,1);
+
+      // Collision with player
+      if(dist(p.x,p.y,player.x,player.y) < p.size + player.width/2){
+        powerupSound.currentTime = 0;
+        powerupSound.play();
+        if(p.type === 'shield'){
+          player.shield = true;
+          player.shieldEnd = frameCount + 900; // 15 sec duration
+        } else if(p.type === 'rapidFire'){
+          player.rapidFire = true;
+          player.rapidFireEnd = frameCount + 900;
+        }
+        powerups.splice(i,1);
+      }
+    });
+
+    // Powerup duration check
+    if(player.shield && frameCount > player.shieldEnd) player.shield = false;
+    if(player.rapidFire && frameCount > player.rapidFireEnd) player.rapidFire = false;
+
+    // Boss spawning and update
+    if(level % 10 === 0 && bosses.length === 0 && enemies.length === 0){
+      spawnBoss();
+    }
+
+    bosses.forEach((boss, i) => {
+      boss.y += boss.speed;
+      if(boss.y >= 100) boss.speed = 0;
+
+      // Move left/right in pattern
+      boss.x += boss.direction * 3;
+      if(boss.x < boss.size/2 || boss.x > width - boss.size/2){
+        boss.direction *= -1;
+      }
+
+      boss.shootTimer++;
+      if(boss.shootTimer > boss.shootInterval){
+        bossShoot(boss);
+        boss.shootTimer = 0;
+      }
+
+      // Collide with player bullets
+      bullets.forEach((b, j) => {
+        if(dist(b.x,b.y,boss.x,boss.y) < boss.size/1.5){
+          boss.health--;
+          bullets.splice(j,1);
+          if(boss.health <= 0){
+            createExplosion(boss.x, boss.y);
+            bosses.splice(i,1);
+            score += 200 * level;
+            scoreText.textContent = "Score: "+score;
+            // Level up after boss defeat
+            levelUp();
+          }
+        }
+      });
+
+      // Boss collision with player bullets already handled
+
+      // Boss bullet collision handled above
+
+      // Boss health bar (drawn later)
+    });
+
+    // If no enemies and no bosses, spawn next wave & level up
+    if(enemies.length === 0 && bosses.length === 0 && frameCount % 300 === 0){
+      spawnWave();
+    }
+
+    // Update UI health bar
+    updateHealthBar();
+
+    // Draw everything
+    draw();
+
+    // Request next frame
+    if(!gameOver) requestAnimationFrame(update);
+  }
+
+  function levelUp(){
+    level++;
+    levelText.textContent = "Level: " + level;
+    // Increase health every 5 levels but clamp max health
+    if(level % 5 === 0){
+      health = Math.min(15, health + 5);
+    }
+  }
+
+  function spawnWave(){
+    const count = 5 + Math.floor(level / 2);
+    for(let i=0; i<count; i++){
+      spawnEnemy();
+    }
+    if(level % 3 === 0) spawnPowerup();
+  }
+
+  function updateHealthBar(){
+    healthFill.style.width = (health / 20 * 100) + '%';
+  }
+
+  // Draw the game scene
+  function draw(){
+    ctx.clearRect(0,0,width,height);
+
+    // Draw stars
+    starLayers.forEach(layer => {
+      ctx.fillStyle = 'white';
+      layer.stars.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fill();
+      });
+    });
+
+    // Draw player ship
+    ctx.save();
+    ctx.translate(player.x, player.y);
+
+    // Shield ring
+    if(player.shield){
+      ctx.strokeStyle = 'cyan';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(0, 0, player.width, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Ship shape (triangle)
+    ctx.fillStyle = 'blue';
+    ctx.beginPath();
+    ctx.moveTo(0, -player.height/2);
+    ctx.lineTo(-player.width/2, player.height/2);
+    ctx.lineTo(player.width/2, player.height/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // Draw player bullets
+    ctx.fillStyle = 'yellow';
+    bullets.forEach(b => {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.size, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    // Draw enemies
+    enemies.forEach(e => {
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.size/2, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    // Draw enemy bullets
+    ctx.fillStyle = 'orange';
+    enemyBullets.forEach(b => {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.size, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    // Draw explosions
+    explosions.forEach(ex => {
+      const alpha = 1 - ex.r / ex.maxR;
+      ctx.strokeStyle = `rgba(255,165,0,${alpha})`;
+      ctx.beginPath();
+      ctx.arc(ex.x, ex.y, ex.r, 0, Math.PI*2);
+      ctx.stroke();
+    });
+
+    // Draw powerups
+    powerups.forEach(p => {
+      ctx.fillStyle = p.type === 'shield' ? 'cyan' : 'lime';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size/2, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = 'black';
+      ctx.font = '18px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(p.type === 'shield' ? 'S' : 'R', p.x, p.y);
+    });
+
+    // Draw bosses
+    bosses.forEach(boss => {
+      // Boss body
+      ctx.fillStyle = 'purple';
+      ctx.beginPath();
+      ctx.rect(boss.x - boss.size/2, boss.y - boss.size/2, boss.size, boss.size);
+      ctx.fill();
+
+      // Boss health bar above
+      ctx.fillStyle = 'red';
+      const barWidth = boss.size;
+      const healthRatio = boss.health / (50 + level * 20);
+      ctx.fillRect(boss.x - barWidth/2, boss.y - boss.size/2 - 20, barWidth * healthRatio, 10);
+      ctx.strokeStyle = 'white';
+      ctx.strokeRect(boss.x - barWidth/2, boss.y - boss.size/2 - 20, barWidth, 10);
+    });
+  }
+
+  // End game screen
+  function endGame(){
+    finalScoreText.textContent = score;
+    gameOverScreen.style.display = 'block';
+    bgMusic.pause();
+  }
+
+  // Start
+  initialSpawn();
+  update();
+
+  // Joystick event listeners
+  joystickBase.addEventListener('touchstart', handleJoystickTouchStart);
+  joystickBase.addEventListener('touchmove', handleJoystickTouchMove);
+  joystickBase.addEventListener('touchend', handleJoystickTouchEnd);
+  joystickBase.addEventListener('touchcancel', handleJoystickTouchEnd);
+
+})();
+</script>
+
+</body>
+</html>
