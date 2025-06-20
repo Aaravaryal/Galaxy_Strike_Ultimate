@@ -98,46 +98,68 @@
   /* Mobile touch controls container */
   #touchControls {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
-    width: 140px;
-    height: 140px;
+    bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
     z-index: 10;
+    padding: 0 20px;
+    box-sizing: border-box;
   }
-  #joystickBase {
-    position: absolute;
-    bottom: 0; left: 0;
-    width: 120px;
-    height: 120px;
-    background: rgba(255,255,255,0.1);
+  
+  /* Left controls (shoot button above left arrow) */
+  #leftControls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  /* Right controls (right arrow) */
+  #rightControls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  /* Arrow button style */
+  .arrow-btn {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
     touch-action: none;
+    user-select: none;
   }
-  #joystickStick {
-    position: absolute;
-    bottom: 40px; left: 40px;
-    width: 40px;
-    height: 40px;
-    background: rgba(255,255,255,0.5);
-    border-radius: 50%;
-    touch-action: none;
-    transition: 0.1s;
-  }
+  
+  /* Shoot button style */
   #shootButton {
-    position: absolute;
-    bottom: 40px;
-    right: 0;
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     background: rgba(255, 0, 0, 0.7);
     border-radius: 50%;
-    text-align: center;
-    line-height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-weight: bold;
-    font-size: 18px;
-    user-select:none;
+    font-size: 16px;
     touch-action: none;
-    cursor: pointer;
+    user-select: none;
+    color: white;
+  }
+  
+  /* Spaceship image */
+  .spaceship {
+    width: 40px;
+    height: 60px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60"><path d="M20 0 L0 60 L40 60 Z" fill="blue"/><circle cx="20" cy="45" r="5" fill="white"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
   }
 </style>
 </head>
@@ -162,9 +184,13 @@
 
 <!-- Mobile Touch Controls -->
 <div id="touchControls">
-  <div id="joystickBase"></div>
-  <div id="joystickStick"></div>
-  <div id="shootButton">Shoot</div>
+  <div id="leftControls">
+    <div id="shootButton">FIRE</div>
+    <div class="arrow-btn" id="leftBtn">←</div>
+  </div>
+  <div id="rightControls">
+    <div class="arrow-btn" id="rightBtn">→</div>
+  </div>
 </div>
 
 <!-- Sounds -->
@@ -204,7 +230,7 @@
   // Game State
   let score = 0;
   let level = 1;
-  let health = 20;
+  let health = 15; // Changed from 20 to 15
   let gameOver = false;
   let frameCount = 0;
 
@@ -218,14 +244,35 @@
   });
 
   // Touch controls variables
-  const joystickBase = document.getElementById('joystickBase');
-  const joystickStick = document.getElementById('joystickStick');
+  const leftBtn = document.getElementById('leftBtn');
+  const rightBtn = document.getElementById('rightBtn');
   const shootButton = document.getElementById('shootButton');
-  let joystickTouchId = null;
-  let joystickPos = {x: 0, y: 0};
-  let joystickVector = {x: 0, y: 0};
-  let shootingTouchId = null;
+  
+  let leftActive = false;
+  let rightActive = false;
   let shootingActive = false;
+
+  // Touch event handlers for buttons
+  function setupButton(button, action) {
+    button.addEventListener('touchstart', e => {
+      e.preventDefault();
+      action(true);
+    });
+    
+    button.addEventListener('touchend', e => {
+      e.preventDefault();
+      action(false);
+    });
+    
+    button.addEventListener('touchcancel', e => {
+      e.preventDefault();
+      action(false);
+    });
+  }
+
+  setupButton(leftBtn, (active) => { leftActive = active; });
+  setupButton(rightBtn, (active) => { rightActive = active; });
+  setupButton(shootButton, (active) => { shootingActive = active; });
 
   // Player Object
   const player = {
@@ -239,6 +286,10 @@
     shield: false,
     shieldEnd: 0,
   };
+
+  // Spaceship image
+  const spaceshipImg = new Image();
+  spaceshipImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60"><path d="M20 0 L0 60 L40 60 Z" fill="blue"/><circle cx="20" cy="45" r="5" fill="white"/></svg>';
 
   // Stars for background
   const starLayers = [
@@ -376,59 +427,6 @@
     return (dx*dx + dy*dy <= (circle.r*circle.r));
   }
 
-  // Touch joystick logic
-  function handleJoystickTouchStart(e) {
-    for(let touch of e.changedTouches){
-      if(joystickTouchId === null && touch.target === joystickBase){
-        joystickTouchId = touch.identifier;
-        joystickPos.x = touch.pageX;
-        joystickPos.y = touch.pageY;
-        joystickStick.style.transition = '0s';
-      }
-    }
-  }
-  function handleJoystickTouchMove(e) {
-    if(joystickTouchId === null) return;
-    for(let touch of e.changedTouches){
-      if(touch.identifier === joystickTouchId){
-        let dx = touch.pageX - joystickPos.x;
-        let dy = touch.pageY - joystickPos.y;
-        const maxDist = 40;
-        let dist = Math.min(maxDist, Math.hypot(dx,dy));
-        let angle = Math.atan2(dy, dx);
-        let x = Math.cos(angle)*dist;
-        let y = Math.sin(angle)*dist;
-        joystickStick.style.left = (40 + x) + 'px';
-        joystickStick.style.bottom = (40 - y) + 'px';
-
-        joystickVector.x = x/maxDist;
-        joystickVector.y = -y/maxDist; // invert y for canvas coords
-      }
-    }
-  }
-  function handleJoystickTouchEnd(e) {
-    for(let touch of e.changedTouches){
-      if(touch.identifier === joystickTouchId){
-        joystickTouchId = null;
-        joystickVector.x = 0;
-        joystickVector.y = 0;
-        joystickStick.style.transition = '0.3s';
-        joystickStick.style.left = '40px';
-        joystickStick.style.bottom = '40px';
-      }
-    }
-  }
-
-  // Touch shoot button
-  shootButton.addEventListener('touchstart', e => {
-    e.preventDefault();
-    shootingActive = true;
-  });
-  shootButton.addEventListener('touchend', e => {
-    e.preventDefault();
-    shootingActive = false;
-  });
-
   // Spawn initial enemies and powerups
   function initialSpawn(){
     for(let i=0; i<5; i++) spawnEnemy();
@@ -449,28 +447,14 @@
       });
     });
 
-    // Player movement from keyboard and joystick
-    let moveX = 0, moveY = 0;
-    if(keys['arrowleft'] || keys['a']) moveX -= 1;
-    if(keys['arrowright'] || keys['d']) moveX += 1;
-    if(keys['arrowup'] || keys['w']) moveY -= 1;
-    if(keys['arrowdown'] || keys['s']) moveY += 1;
-
-    // Joystick adds to movement
-    moveX += joystickVector.x;
-    moveY += joystickVector.y;
-
-    // Normalize diagonal speed
-    if(moveX !== 0 && moveY !== 0){
-      moveX *= Math.SQRT1_2;
-      moveY *= Math.SQRT1_2;
-    }
+    // Player movement from keyboard and touch buttons
+    let moveX = 0;
+    if(keys['arrowleft'] || keys['a'] || leftActive) moveX -= 1;
+    if(keys['arrowright'] || keys['d'] || rightActive) moveX += 1;
 
     // Apply speed and clamp
     player.x += moveX * player.speed;
-    player.y += moveY * player.speed;
     player.x = clamp(player.x, player.width/2, width - player.width/2);
-    player.y = clamp(player.y, player.height/2, height - player.height/2);
 
     // Shooting (keyboard space or up arrow) and touch shoot button
     if(frameCount % (player.rapidFire ? 5 : 10) === 0) {
@@ -604,12 +588,6 @@
           }
         }
       });
-
-      // Boss collision with player bullets already handled
-
-      // Boss bullet collision handled above
-
-      // Boss health bar (drawn later)
     });
 
     // If no enemies and no bosses, spawn next wave & level up
@@ -645,7 +623,7 @@
   }
 
   function updateHealthBar(){
-    healthFill.style.width = (health / 20 * 100) + '%';
+    healthFill.style.width = (health / 15 * 100) + '%'; // Updated to 15 max health
   }
 
   // Draw the game scene
@@ -675,14 +653,8 @@
       ctx.stroke();
     }
 
-    // Ship shape (triangle)
-    ctx.fillStyle = 'blue';
-    ctx.beginPath();
-    ctx.moveTo(0, -player.height/2);
-    ctx.lineTo(-player.width/2, player.height/2);
-    ctx.lineTo(player.width/2, player.height/2);
-    ctx.closePath();
-    ctx.fill();
+    // Draw spaceship image
+    ctx.drawImage(spaceshipImg, -player.width/2, -player.height/2, player.width, player.height);
     ctx.restore();
 
     // Draw player bullets
@@ -759,12 +731,6 @@
   // Start
   initialSpawn();
   update();
-
-  // Joystick event listeners
-  joystickBase.addEventListener('touchstart', handleJoystickTouchStart);
-  joystickBase.addEventListener('touchmove', handleJoystickTouchMove);
-  joystickBase.addEventListener('touchend', handleJoystickTouchEnd);
-  joystickBase.addEventListener('touchcancel', handleJoystickTouchEnd);
 
 })();
 </script>
