@@ -2,115 +2,38 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Galaxy Strike Ultimate</title>
 <style>
-  /* Base styles */
   body, html {
-    margin: 0; padding: 0; overflow: hidden; 
-    background: black;
+    margin: 0; padding: 0; overflow: hidden; background: black;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: white;
     user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    touch-action: manipulation;
-    width: 100%;
-    height: 100%;
-    position: fixed;
+    -webkit-user-select:none;
+    -webkit-touch-callout:none;
   }
-  
-  /* Force landscape on mobile */
-  @media screen and (orientation: portrait) {
-    #orientationWarning {
-      display: flex;
-    }
-    #gameContainer {
-      display: none;
-    }
-  }
-  
-  @media screen and (orientation: landscape) {
-    #orientationWarning {
-      display: none;
-    }
-  }
-  
-  #orientationWarning {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: black;
-    z-index: 100;
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 20px;
-  }
-  
-  #gameContainer {
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-  
   canvas {
     display: block;
     background: black;
-    width: 100%;
-    height: 100%;
   }
-  
-  /* UI Elements */
   #ui {
     position: absolute;
     top: 10px;
     width: 100%;
     pointer-events: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
   }
-  
-  #powerupTimer {
-    font-size: 14px;
-    color: cyan;
-    margin-bottom: 5px;
-  }
-  
-  #levelText {
-    font-weight: bold;
-    font-size: 20px;
-    margin-bottom: 5px;
-  }
-  
-  #scoreText {
-    position: absolute;
-    bottom: 10px;
-    left: 20px;
-    font-weight: bold;
-    font-size: 18px;
-  }
-  
   #healthContainer {
     position: absolute;
-    top: 10px;
-    left: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    top: 10px; left: 20px;
+    pointer-events: none;
+    user-select: none;
   }
-  
   #healthText {
     font-weight: bold;
     font-size: 16px;
     margin-bottom: 4px;
   }
-  
   #healthBar {
     width: 180px;
     height: 18px;
@@ -119,80 +42,81 @@
     border-radius: 6px;
     overflow: hidden;
   }
-  
   #healthFill {
     height: 100%;
     background: red;
     width: 100%;
     transition: width 0.2s ease-out;
   }
-  
-  /* Screens */
-  #gameOverScreen, #startScreen, #missionsScreen {
+  #levelText {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.85);
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    text-align: center;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    font-size: 20px;
+    pointer-events: none;
   }
-  
-  #gameOverScreen p, #startScreen h1, #missionsScreen h1 {
+  #scoreText {
+    position: absolute;
+    bottom: 10px;
+    left: 20px;
+    font-weight: bold;
+    font-size: 18px;
+    pointer-events: none;
+  }
+  #gameOverScreen {
+    display: none;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.85);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    z-index: 5;
+    user-select:none;
+  }
+  #gameOverScreen p {
     font-size: 24px;
     margin: 10px 0;
-    color: #007bff;
-    text-shadow: 0 0 10px rgba(0,123,255,0.5);
   }
-  
-  #finalScore, #finalLevel {
-    font-weight: bold;
-    color: white;
-  }
-  
-  button {
+  #gameOverScreen button {
     background: #007bff;
     border: none;
-    padding: 12px 24px;
+    padding: 10px 18px;
     font-size: 18px;
     color: white;
     cursor: pointer;
     border-radius: 6px;
-    margin: 8px;
-    min-width: 200px;
-    transition: all 0.2s;
   }
-  
-  button:hover {
+  #gameOverScreen button:hover {
     background: #0056b3;
-    transform: scale(1.05);
   }
-  
-  /* Touch controls */
   #touchControls {
     position: absolute;
     bottom: 20px;
     width: 100%;
     display: flex;
     justify-content: space-between;
-    z-index: 5;
+    z-index: 10;
     padding: 0 20px;
     box-sizing: border-box;
   }
-  
-  .controlGroup {
+  #leftControls {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
   }
-  
-  .arrow-btn, #shootButton {
+  #rightControls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+  .arrow-btn {
     width: 70px;
     height: 70px;
     background: rgba(255, 255, 255, 0.2);
@@ -200,448 +124,241 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
+    font-size: 30px;
+    touch-action: none;
+    user-select: none;
+  }
+  #shootButton {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 16px;
     touch-action: none;
     user-select: none;
     color: white;
-    transition: all 0.1s;
   }
-  
-  .arrow-btn:active, #shootButton:active {
-    transform: scale(0.9);
-    background: rgba(255, 255, 255, 0.4);
+  .spaceship {
+    width: 40px;
+    height: 60px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60"><path d="M20 0 L0 60 L40 60 Z" fill="blue"/><circle cx="20" cy="45" r="5" fill="white"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
   }
-  
-  #shootButton {
-    background: rgba(255, 0, 0, 0.7);
-    font-weight: bold;
-  }
-  
-  /* Missions */
-  #missionsList {
-    width: 90%;
-    max-height: 60vh;
-    overflow-y: auto;
-    margin: 20px 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 10px;
-  }
-  
-  .missionCard {
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 15px;
+  #startScreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    transition: all 0.3s;
+    z-index: 10;
   }
-  
-  .missionCard:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 15px rgba(0,123,255,0.3);
+  #startScreen h1 {
+    font-size: 48px;
+    color: #007bff;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px rgba(0,123,255,0.5);
   }
-  
-  .missionCard h3 {
-    margin: 0 0 10px 0;
-    color: #ffcc00;
-  }
-  
-  .missionCard p {
-    margin: 5px 0;
-    font-size: 14px;
-  }
-  
-  .missionCard.completed {
-    background: rgba(0,255,0,0.2);
-    border: 1px solid #00ff00;
-  }
-  
-  .missionCard.locked {
-    opacity: 0.6;
-    pointer-events: none;
-  }
-  
-  .missionProgress {
-    width: 100%;
-    height: 10px;
-    background: #333;
-    border-radius: 5px;
-    margin-top: 10px;
-    overflow: hidden;
-  }
-  
-  .missionProgressFill {
-    height: 100%;
+  #startScreen button {
     background: #007bff;
-    width: 0%;
-    transition: width 0.3s ease;
+    border: none;
+    padding: 15px 30px;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+    border-radius: 8px;
+    margin: 10px;
+  }
+  #startScreen button:hover {
+    background: #0056b3;
+  }
+  #powerupTimer {
+    position: absolute;
+    top: 50px;
+    left: 20px;
+    font-size: 14px;
+    color: cyan;
   }
 </style>
 </head>
 <body>
-  <div id="orientationWarning">
-    <h1>Please rotate your device to landscape mode</h1>
-    <p>This game is designed to be played in landscape orientation</p>
+
+<canvas id="game"></canvas>
+
+<div id="ui">
+  <div id="healthContainer">
+    <div id="healthText">Health</div>
+    <div id="healthBar"><div id="healthFill"></div></div>
   </div>
+  <div id="levelText">Level: 1</div>
+  <div id="scoreText">Score: 0</div>
+  <div id="powerupTimer"></div>
+</div>
 
-  <div id="gameContainer">
-    <canvas id="game"></canvas>
+<div id="gameOverScreen">
+  <p>💥 Game Over!</p>
+  <p>Your Score: <span id="finalScore">0</span></p>
+  <p>Level Reached: <span id="finalLevel">1</span></p>
+  <button onclick="location.reload()">Restart</button>
+</div>
 
-    <div id="ui">
-      <div id="healthContainer">
-        <div id="healthText">Health</div>
-        <div id="healthBar"><div id="healthFill"></div></div>
-      </div>
-      <div id="powerupTimer"></div>
-      <div id="levelText">Level: 1</div>
-      <div id="scoreText">Score: 0</div>
-    </div>
+<div id="startScreen">
+  <h1>GALAXY STRIKE ULTIMATE</h1>
+  <button id="startButton">START GAME</button>
+  <button id="muteButton">MUTE SOUND</button>
+</div>
 
-    <div id="gameOverScreen">
-      <p>💥 Game Over!</p>
-      <p>Your Score: <span id="finalScore">0</span></p>
-      <p>Level Reached: <span id="finalLevel">1</span></p>
-      <button onclick="location.reload()">Restart</button>
-      <button onclick="showScreen('missionsScreen')">Missions</button>
-    </div>
-
-    <div id="startScreen">
-      <h1>GALAXY STRIKE ULTIMATE</h1>
-      <button id="startButton">START GAME</button>
-      <button onclick="showScreen('missionsScreen')">MISSIONS</button>
-      <button id="muteButton">MUTE SOUND</button>
-    </div>
-
-    <div id="missionsScreen">
-      <h1>MISSIONS</h1>
-      <div id="missionsList"></div>
-      <button onclick="showScreen('startScreen')">BACK</button>
-    </div>
-
-    <div id="touchControls">
-      <div class="controlGroup" id="leftControls">
-        <div id="shootButton">FIRE</div>
-        <div class="arrow-btn" id="leftBtn">←</div>
-      </div>
-      <div class="controlGroup" id="rightControls">
-        <div class="arrow-btn" id="rightBtn">→</div>
-      </div>
-    </div>
+<div id="touchControls">
+  <div id="leftControls">
+    <div id="shootButton">FIRE</div>
+    <div class="arrow-btn" id="leftBtn">←</div>
   </div>
+  <div id="rightControls">
+    <div class="arrow-btn" id="rightBtn">→</div>
+  </div>
+</div>
 
-  <audio id="shootSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
-  <audio id="explosionSound" src="https://www.soundjay.com/explosion/sounds/explosion-01.mp3" preload="auto"></audio>
-  <audio id="powerupSound" src="https://www.soundjay.com/button/sounds/button-16.mp3" preload="auto"></audio>
-  <audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop preload="auto"></audio>
+<audio id="shootSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+<audio id="explosionSound" src="https://www.soundjay.com/explosion/sounds/explosion-01.mp3" preload="auto"></audio>
+<audio id="powerupSound" src="https://www.soundjay.com/button/sounds/button-16.mp3" preload="auto"></audio>
+<audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop preload="auto"></audio>
 
 <script>
-// Game constants
-const MAX_HEALTH = 12;
-const MISSIONS = [
-  { id: 1, title: "Basic Training", description: "Reach level 5", requiredLevel: 5, reward: "Unlock Mission 2" },
-  { id: 2, title: "Combat Initiation", description: "Reach level 10", requiredLevel: 10, reward: "Unlock Mission 3" },
-  { id: 3, title: "Space Cadet", description: "Reach level 15", requiredLevel: 15, reward: "Unlock Mission 4" },
-  { id: 4, title: "Asteroid Runner", description: "Reach level 20", requiredLevel: 20, reward: "Unlock Mission 5" },
-  { id: 5, title: "Galaxy Defender", description: "Reach level 25", requiredLevel: 25, reward: "Unlock Mission 6" },
-  { 
-    id: 6, 
-    title: "Elite Striker", 
-    description: "Reach level 30 (Limited Health)", 
-    requiredLevel: 30, 
-    reward: "Unlock Mission 7",
-    specialCondition: { maxHealth: 8 }
-  },
-  { 
-    id: 7, 
-    title: "Boss Hunter", 
-    description: "Reach level 35 (Faster Bosses)", 
-    requiredLevel: 35, 
-    reward: "Unlock Mission 8",
-    specialCondition: { bossSpeed: 1.5 }
-  },
-  { 
-    id: 8, 
-    title: "Precision Pilot", 
-    description: "Reach level 40 (Slower Ship)", 
-    requiredLevel: 40, 
-    reward: "Unlock Mission 9",
-    specialCondition: { playerSpeed: 3 }
-  },
-  { 
-    id: 9, 
-    title: "Ultimate Challenge", 
-    description: "Reach level 45 (Hardcore Mode)", 
-    requiredLevel: 45, 
-    reward: "Unlock Mission 10",
-    specialCondition: { 
-      maxHealth: 6,
-      playerSpeed: 2.5,
-      bossSpeed: 2
-    }
-  },
-  { 
-    id: 10, 
-    title: "Galaxy Champion", 
-    description: "Reach level 50 (Nightmare Mode)", 
-    requiredLevel: 50, 
-    reward: "Ultimate Badge",
-    specialCondition: { 
-      maxHealth: 4,
-      playerSpeed: 2,
-      bossSpeed: 2.5,
-      enemyDamage: 2
-    }
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const startScreen = document.getElementById('startScreen');
+  const startButton = document.getElementById('startButton');
+  const muteButton = document.getElementById('muteButton');
+
+  // UI Elements
+  const healthFill = document.getElementById('healthFill');
+  const levelText = document.getElementById('levelText');
+  const scoreText = document.getElementById('scoreText');
+  const finalScoreText = document.getElementById('finalScore');
+  const finalLevelText = document.getElementById('finalLevel');
+  const gameOverScreen = document.getElementById('gameOverScreen');
+  const powerupTimer = document.getElementById('powerupTimer');
+
+  // Sounds
+  const shootSound = document.getElementById('shootSound');
+  const explosionSound = document.getElementById('explosionSound');
+  const powerupSound = document.getElementById('powerupSound');
+  const bgMusic = document.getElementById('bgMusic');
+  let muted = false;
+
+  // Game State
+  let gameStarted = false;
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+  let score = 0;
+  let level = 1;
+  let health = 12; // Changed from 15 to 12
+  let gameOver = false;
+  let frameCount = 0;
+
+  // Event Listeners
+  startButton.addEventListener('click', startGame);
+  muteButton.addEventListener('click', toggleMute);
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  function startGame() {
+    gameStarted = true;
+    startScreen.style.display = 'none';
+    bgMusic.volume = muted ? 0 : 0.3;
+    bgMusic.play();
+    initialSpawn();
+    update();
   }
-];
 
-// Game elements
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const startScreen = document.getElementById('startScreen');
-const startButton = document.getElementById('startButton');
-const muteButton = document.getElementById('muteButton');
-const missionsList = document.getElementById('missionsList');
+  function toggleMute() {
+    muted = !muted;
+    muteButton.textContent = muted ? "UNMUTE SOUND" : "MUTE SOUND";
+    bgMusic.volume = muted ? 0 : 0.3;
+    if(!muted && !bgMusic.paused) bgMusic.play();
+  }
 
-// UI Elements
-const healthFill = document.getElementById('healthFill');
-const levelText = document.getElementById('levelText');
-const scoreText = document.getElementById('scoreText');
-const finalScoreText = document.getElementById('finalScore');
-const finalLevelText = document.getElementById('finalLevel');
-const gameOverScreen = document.getElementById('gameOverScreen');
-const powerupTimer = document.getElementById('powerupTimer');
+  // Controls
+  let keys = {};
+  document.addEventListener('keydown', e => {
+    keys[e.key.toLowerCase()] = true;
+  });
+  document.addEventListener('keyup', e => {
+    keys[e.key.toLowerCase()] = false;
+  });
 
-// Sounds
-const shootSound = document.getElementById('shootSound');
-const explosionSound = document.getElementById('explosionSound');
-const powerupSound = document.getElementById('powerupSound');
-const bgMusic = document.getElementById('bgMusic');
-let muted = false;
+  // Touch controls
+  const leftBtn = document.getElementById('leftBtn');
+  const rightBtn = document.getElementById('rightBtn');
+  const shootButton = document.getElementById('shootButton');
+  
+  let leftActive = false;
+  let rightActive = false;
+  let shootingActive = false;
 
-// Game State
-let gameStarted = false;
-let width, height;
-let score = 0;
-let level = 1;
-let health = MAX_HEALTH;
-let gameOver = false;
-let frameCount = 0;
-let currentMission = null;
-let completedMissions = JSON.parse(localStorage.getItem('completedMissions') || '[]');
-
-// Initialize canvas size
-function resizeCanvas() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-  console.log('Canvas resized to:', width, 'x', height);
-}
-
-// Initialize missions
-function initMissions() {
-  missionsList.innerHTML = '';
-  MISSIONS.forEach(mission => {
-    const isCompleted = completedMissions.includes(mission.id);
-    const isLocked = mission.id > 1 && !completedMissions.includes(mission.id - 1);
+  function setupButton(button, action) {
+    button.addEventListener('touchstart', e => {
+      e.preventDefault();
+      action(true);
+    });
     
-    const missionCard = document.createElement('div');
-    missionCard.className = `missionCard ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
-    missionCard.innerHTML = `
-      <h3>${mission.title}</h3>
-      <p>${mission.description}</p>
-      <p>Reward: ${mission.reward}</p>
-      <div class="missionProgress">
-        <div class="missionProgressFill" style="width: ${isCompleted ? 100 : 0}%"></div>
-      </div>
-      ${isLocked ? '<p>Complete previous mission to unlock</p>' : ''}
-    `;
+    button.addEventListener('touchend', e => {
+      e.preventDefault();
+      action(false);
+    });
     
-    if (!isLocked) {
-      missionCard.addEventListener('click', () => startMission(mission));
-    }
-    
-    missionsList.appendChild(missionCard);
-  });
-}
-
-// Start a mission
-function startMission(mission) {
-  currentMission = mission;
-  health = mission.specialCondition?.maxHealth || MAX_HEALTH;
-  showScreen('gameContainer');
-  startGame();
-}
-
-// Check mission progress
-function checkMissionProgress() {
-  if (!currentMission) return;
-  
-  const missionCard = missionsList.children[currentMission.id - 1];
-  const progressFill = missionCard.querySelector('.missionProgressFill');
-  const progress = Math.min(100, (level / currentMission.requiredLevel) * 100);
-  progressFill.style.width = `${progress}%`;
-  
-  if (level >= currentMission.requiredLevel) {
-    completeMission(currentMission.id);
+    button.addEventListener('touchcancel', e => {
+      e.preventDefault();
+      action(false);
+    });
   }
-}
 
-// Complete a mission
-function completeMission(missionId) {
-  if (!completedMissions.includes(missionId)) {
-    completedMissions.push(missionId);
-    localStorage.setItem('completedMissions', JSON.stringify(completedMissions));
-    initMissions();
-  }
-}
+  setupButton(leftBtn, (active) => { leftActive = active; });
+  setupButton(rightBtn, (active) => { rightActive = active; });
+  setupButton(shootButton, (active) => { shootingActive = active; });
 
-// Screen management
-function showScreen(screenId) {
-  document.querySelectorAll('#gameContainer, #gameOverScreen, #startScreen, #missionsScreen').forEach(el => {
-    el.style.display = 'none';
-  });
-  document.getElementById(screenId).style.display = 'flex';
-  
-  if (screenId === 'gameContainer') {
-    // Redraw game when showing game container
-    if (gameStarted && !gameOver) {
-      draw();
-    }
-  }
-}
+  // Player Object
+  const player = {
+    x: width / 2,
+    y: height - 80,
+    width: 40,
+    height: 60,
+    speed: 5,
+    rapidFire: false,
+    rapidFireEnd: 0,
+    shield: false,
+    shieldEnd: 0,
+    damageBoost: false,
+    damageBoostEnd: 0,
+    tripleShot: false,
+    tripleShotEnd: 0
+  };
 
-// Event Listeners
-startButton.addEventListener('click', startGame);
-muteButton.addEventListener('click', toggleMute);
-window.addEventListener('resize', handleResize);
-window.addEventListener('orientationchange', handleResize);
+  // Spaceship image
+  const spaceshipImg = new Image();
+  spaceshipImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60"><path d="M20 0 L0 60 L40 60 Z" fill="blue"/><circle cx="20" cy="45" r="5" fill="white"/></svg>';
 
-function handleResize() {
-  resizeCanvas();
-  // Redraw immediately after resize
-  if (gameStarted && !gameOver) {
-    draw();
-  }
-}
+  // Stars for background
+  const starLayers = [
+    {stars: [], speed: 0.5, count: 50, sizeMax: 1},
+    {stars: [], speed: 1.2, count: 30, sizeMax: 1.5},
+    {stars: [], speed: 2, count: 20, sizeMax: 2.5},
+  ];
 
-function startGame() {
-  gameStarted = true;
-  gameOver = false;
-  score = 0;
-  level = 1;
-  health = currentMission?.specialCondition?.maxHealth || MAX_HEALTH;
-  showScreen('gameContainer');
-  bgMusic.volume = muted ? 0 : 0.3;
-  bgMusic.play().catch(e => console.log("Audio play failed:", e));
-  resetGame();
-  update();
-}
-
-function toggleMute() {
-  muted = !muted;
-  muteButton.textContent = muted ? "UNMUTE SOUND" : "MUTE SOUND";
-  bgMusic.volume = muted ? 0 : 0.3;
-  if(!muted && !bgMusic.paused) bgMusic.play().catch(e => console.log("Audio play failed:", e));
-}
-
-// Controls
-let keys = {};
-document.addEventListener('keydown', e => {
-  keys[e.key.toLowerCase()] = true;
-});
-document.addEventListener('keyup', e => {
-  keys[e.key.toLowerCase()] = false;
-});
-
-// Touch controls
-const leftBtn = document.getElementById('leftBtn');
-const rightBtn = document.getElementById('rightBtn');
-const shootButton = document.getElementById('shootButton');
-
-let leftActive = false;
-let rightActive = false;
-let shootingActive = false;
-
-function setupButton(button, action) {
-  button.addEventListener('touchstart', e => {
-    e.preventDefault();
-    action(true);
-  });
-  
-  button.addEventListener('touchend', e => {
-    e.preventDefault();
-    action(false);
-  });
-  
-  button.addEventListener('touchcancel', e => {
-    e.preventDefault();
-    action(false);
-  });
-  
-  // Mouse controls for desktop testing
-  button.addEventListener('mousedown', e => {
-    e.preventDefault();
-    action(true);
-  });
-  
-  button.addEventListener('mouseup', e => {
-    e.preventDefault();
-    action(false);
-  });
-  
-  button.addEventListener('mouseleave', e => {
-    e.preventDefault();
-    action(false);
-  });
-}
-
-setupButton(leftBtn, (active) => { leftActive = active; });
-setupButton(rightBtn, (active) => { rightActive = active; });
-setupButton(shootButton, (active) => { shootingActive = active; });
-
-// Player Object
-const player = {
-  x: 0, // Will be set in resetGame
-  y: 0, // Will be set in resetGame
-  width: 40,
-  height: 60,
-  speed: 5,
-  rapidFire: false,
-  rapidFireEnd: 0,
-  shield: false,
-  shieldEnd: 0,
-  damageBoost: false,
-  damageBoostEnd: 0,
-  tripleShot: false,
-  tripleShotEnd: 0
-};
-
-// Apply mission special conditions
-function applyMissionConditions() {
-  if (!currentMission?.specialCondition) return;
-  
-  if (currentMission.specialCondition.playerSpeed) {
-    player.speed = currentMission.specialCondition.playerSpeed;
-  }
-}
-
-// Spaceship image
-const spaceshipImg = new Image();
-spaceshipImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60"><path d="M20 0 L0 60 L40 60 Z" fill="blue"/><circle cx="20" cy="45" r="5" fill="white"/></svg>';
-
-// Stars for background
-const starLayers = [
-  {stars: [], speed: 0.5, count: 50, sizeMax: 1},
-  {stars: [], speed: 1.2, count: 30, sizeMax: 1.5},
-  {stars: [], speed: 2, count: 20, sizeMax: 2.5},
-];
-
-// Initialize stars
-function initStars() {
   starLayers.forEach(layer => {
-    layer.stars = [];
-    for(let i = 0; i < layer.count; i++) {
+    for(let i=0; i<layer.count; i++) {
       layer.stars.push({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -649,590 +366,537 @@ function initStars() {
       });
     }
   });
-}
 
-// Game Objects
-let bullets = [];
-let enemies = [];
-let enemyBullets = [];
-let explosions = [];
-let powerups = [];
-let bosses = [];
+  // Game Objects
+  const bullets = [];
+  const enemies = [];
+  const enemyBullets = [];
+  const explosions = [];
+  const powerups = [];
+  const bosses = [];
 
-// Reset game state
-function resetGame() {
-  player.x = width / 2;
-  player.y = height - 80;
-  
-  bullets = [];
-  enemies = [];
-  enemyBullets = [];
-  explosions = [];
-  powerups = [];
-  bosses = [];
-  frameCount = 0;
-  applyMissionConditions();
-  initStars();
-  initialSpawn();
-  updateHealthBar();
-  levelText.textContent = "Level: 1";
-  scoreText.textContent = "Score: 0";
-  draw(); // Draw initial frame
-}
+  // Utility funcs
+  function randomRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
 
-// Utility funcs
-function randomRange(min, max) {
-  return Math.random() * (max - min) + min;
-}
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
 
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
-// Create Player Bullets
-function playerShoot() {
-  if(gameOver) return;
-  
-  if(frameCount < player.rapidFireEnd || !player.rapidFire) {
-    shootSound.currentTime = 0;
-    if(!muted) shootSound.play().catch(e => console.log("Audio play failed:", e));
+  // Create Player Bullets
+  function playerShoot() {
+    if(gameOver) return;
     
-    if(player.tripleShot && frameCount < player.tripleShotEnd) {
-      // Triple shot pattern
-      bullets.push({x: player.x - 15, y: player.y - player.height/2, size: 6, speed: 12});
-      bullets.push({x: player.x, y: player.y - player.height/2, size: 6, speed: 12});
-      bullets.push({x: player.x + 15, y: player.y - player.height/2, size: 6, speed: 12});
-    } else {
-      // Normal shot
-      bullets.push({x: player.x, y: player.y - player.height/2, size: 6, speed: 12});
+    if(frameCount < player.rapidFireEnd || !player.rapidFire) {
+      shootSound.currentTime = 0;
+      if(!muted) shootSound.play();
+      
+      if(player.tripleShot && frameCount < player.tripleShotEnd) {
+        // Triple shot pattern
+        bullets.push({x: player.x - 15, y: player.y - player.height/2, size: 6, speed: 12});
+        bullets.push({x: player.x, y: player.y - player.height/2, size: 6, speed: 12});
+        bullets.push({x: player.x + 15, y: player.y - player.height/2, size: 6, speed: 12});
+      } else {
+        // Normal shot
+        bullets.push({x: player.x, y: player.y - player.height/2, size: 6, speed: 12});
+      }
     }
   }
-}
 
-// Enemy Shoot
-function enemyShoot(enemy) {
-  enemyBullets.push({
-    x: enemy.x,
-    y: enemy.y + enemy.size / 2,
-    size: 6,
-    speed: 5,
-  });
-}
-
-// Boss Shoot Pattern
-function bossShoot(boss) {
-  // Calculate angle to player
-  const dx = player.x - boss.x;
-  const dy = player.y - boss.y;
-  const angle = Math.atan2(dy, dx);
-  
-  // Shoot bullets in player's direction
-  for (let i = -1; i <= 1; i++) {
-    const spread = Math.PI / 8 * i;
-    const speed = 5;
-    
+  // Enemy Shoot
+  function enemyShoot(enemy) {
     enemyBullets.push({
-      x: boss.x,
-      y: boss.y + boss.size/2,
-      size: 8,
-      speedX: Math.cos(angle + spread) * speed,
-      speedY: Math.sin(angle + spread) * speed,
+      x: enemy.x,
+      y: enemy.y + enemy.size / 2,
+      size: 6,
+      speed: 5,
     });
   }
-}
 
-// Explosion effect
-function createExplosion(x,y) {
-  explosions.push({x,y,r:0,maxR:30});
-  explosionSound.currentTime = 0;
-  if(!muted) explosionSound.play().catch(e => console.log("Audio play failed:", e));
-}
-
-// Spawn enemy with CONSTANT speed
-function spawnEnemy() {
-  const size = 40;
-  enemies.push({
-    x: randomRange(size/2, width - size/2),
-    y: -size,
-    size,
-    speed: 1, // Constant speed
-    shootTimer: 0,
-    shootInterval: 120 + Math.random() * 60,
-  });
-}
-
-// Spawn powerup
-function spawnPowerup() {
-  const size = 25;
-  const types = ['shield', 'rapidFire', 'tripleShot'];
-  const type = types[Math.floor(Math.random() * types.length)];
-  powerups.push({
-    x: randomRange(size, width - size),
-    y: -size,
-    size,
-    speed: 1.5,
-    type,
-  });
-}
-
-// Spawn special powerup during boss fight
-function spawnSpecialPowerup() {
-  const size = 25;
-  powerups.push({
-    x: randomRange(size, width - size),
-    y: -size,
-    size,
-    speed: 1.5,
-    type: 'damageBoost',
-    duration: 900,
-  });
-}
-
-// Spawn boss
-function spawnBoss() {
-  const size = 120;
-  const baseHealth = level >= 50 ? 10 : 5;
-  bosses.push({
-    x: width / 2,
-    y: -size,
-    size,
-    speed: currentMission?.specialCondition?.bossSpeed || 1,
-    health: baseHealth + level * 2,
-    shootTimer: 0,
-    shootInterval: 90,
-    direction: 1,
-    moveTimer: 0,
-    moveInterval: 60,
-  });
-  
-  // 70% chance to spawn special powerup
-  if(Math.random() < 0.7) {
-    spawnSpecialPowerup();
+  // Boss Shoot Pattern
+  function bossShoot(boss) {
+    // Calculate angle to player
+    const dx = player.x - boss.x;
+    const dy = player.y - boss.y;
+    const angle = Math.atan2(dy, dx);
+    
+    // Shoot bullets in player's direction
+    for (let i = -1; i <= 1; i++) {
+      const spread = Math.PI / 8 * i;
+      const speed = 5;
+      
+      enemyBullets.push({
+        x: boss.x,
+        y: boss.y + boss.size/2,
+        size: 8,
+        speedX: Math.cos(angle + spread) * speed,
+        speedY: Math.sin(angle + spread) * speed,
+      });
+    }
   }
-}
 
-// Collision helpers
-function dist(x1,y1,x2,y2) {
-  return Math.hypot(x1-x2,y1-y2);
-}
+  // Explosion effect
+  function createExplosion(x,y) {
+    explosions.push({x,y,r:0,maxR:30});
+    explosionSound.currentTime = 0;
+    if(!muted) explosionSound.play();
+  }
 
-// Initial spawn
-function initialSpawn(){
-  for(let i=0; i<5; i++) spawnEnemy();
-  spawnPowerup();
-}
-
-// Main update loop
-function update() {
-  if(!gameStarted || gameOver) return;
-
-  frameCount++;
-
-  // Update stars
-  starLayers.forEach(layer => {
-    layer.stars.forEach(s => {
-      s.y += layer.speed;
-      if(s.y > height) s.y = 0;
+  // Spawn enemy with CONSTANT speed
+  function spawnEnemy() {
+    const size = 40;
+    enemies.push({
+      x: randomRange(size/2, width - size/2),
+      y: -size,
+      size,
+      speed: 1, // Constant speed (no level scaling)
+      shootTimer: 0,
+      shootInterval: 120 + Math.random() * 60,
     });
-  });
+  }
 
-  // Player movement
-  let moveX = 0;
-  if(keys['arrowleft'] || keys['a'] || leftActive) moveX -= 1;
-  if(keys['arrowright'] || keys['d'] || rightActive) moveX += 1;
+  // Spawn powerup
+  function spawnPowerup() {
+    const size = 25;
+    const types = ['shield', 'rapidFire', 'tripleShot'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    powerups.push({
+      x: randomRange(size, width - size),
+      y: -size,
+      size,
+      speed: 1.5,
+      type,
+    });
+  }
 
-  player.x += moveX * player.speed;
-  player.x = clamp(player.x, player.width/2, width - player.width/2);
+  // Spawn special powerup during boss fight
+  function spawnSpecialPowerup() {
+    const size = 25;
+    powerups.push({
+      x: randomRange(size, width - size),
+      y: -size,
+      size,
+      speed: 1.5,
+      type: 'damageBoost',
+      duration: 900,
+    });
+  }
 
-  // Shooting
-  if(frameCount % (player.rapidFire ? 5 : 10) === 0) {
-    if(keys[' '] || keys['arrowup'] || shootingActive) {
-      playerShoot();
+  // Spawn boss
+  function spawnBoss() {
+    const size = 120;
+    const baseHealth = level >= 50 ? 10 : 5;
+    bosses.push({
+      x: width / 2,
+      y: -size,
+      size,
+      speed: 1,
+      health: baseHealth + level * 2,
+      shootTimer: 0,
+      shootInterval: 90,
+      direction: 1,
+      moveTimer: 0,
+      moveInterval: 60,
+    });
+    
+    // 70% chance to spawn special powerup
+    if(Math.random() < 0.7) {
+      spawnSpecialPowerup();
     }
   }
 
-  // Update bullets
-  bullets.forEach((b, i) => {
-    b.y -= b.speed;
-    if(b.y < -10) bullets.splice(i,1);
-  });
+  // Collision helpers
+  function dist(x1,y1,x2,y2) {
+    return Math.hypot(x1-x2,y1-y2);
+  }
 
-  // Update enemies
-  enemies.forEach((e, i) => {
-    e.y += e.speed;
-    e.shootTimer = (e.shootTimer || 0) + 1;
+  // Initial spawn
+  function initialSpawn(){
+    for(let i=0; i<5; i++) spawnEnemy();
+    spawnPowerup();
+  }
 
-    // Enemy shoot
-    if(e.shootTimer > e.shootInterval){
-      enemyShoot(e);
-      e.shootTimer = 0;
-    }
+  // Main update loop
+  function update() {
+    if(!gameStarted || gameOver) return;
 
-    // Remove if out of screen
-    if(e.y > height + e.size) enemies.splice(i,1);
+    frameCount++;
 
-    // Bullet collision
-    bullets.forEach((b, j) => {
-      let distToEnemy = dist(b.x,b.y, e.x,e.y);
-      if(distToEnemy < e.size/1.5){
-        createExplosion(e.x, e.y);
-        bullets.splice(j,1);
-        enemies.splice(i,1);
-        score += 10 * level;
-        scoreText.textContent = "Score: "+score;
-      }
+    // Update stars
+    starLayers.forEach(layer => {
+      layer.stars.forEach(s => {
+        s.y += layer.speed;
+        if(s.y > height) s.y = 0;
+      });
     });
 
-    if(e.y > height + e.size) enemies.splice(i,1);
-  });
+    // Player movement
+    let moveX = 0;
+    if(keys['arrowleft'] || keys['a'] || leftActive) moveX -= 1;
+    if(keys['arrowright'] || keys['d'] || rightActive) moveX += 1;
 
-  // Update enemy bullets
-  enemyBullets.forEach((b,i) => {
-    b.y += b.speedY || b.speed || 5;
-    b.x += b.speedX || 0;
+    player.x += moveX * player.speed;
+    player.x = clamp(player.x, player.width/2, width - player.width/2);
 
-    // Check collision with player
-    let hitRadius = player.width / 2;
-    if(dist(b.x,b.y,player.x,player.y) < b.size + hitRadius){
-      if(!player.shield){
-        let damage = currentMission?.specialCondition?.enemyDamage || 1;
-        if(level >= 150) damage = 3;
-        else if(level >= 50) damage = 2;
-        
-        // Apply damage reduction if active
-        if(player.damageBoost && frameCount < player.damageBoostEnd) {
-          damage = Math.max(1, damage - 2);
-        }
-        
-        health -= damage;
-        updateHealthBar();
-        if(health <= 0){
-          gameOver = true;
-          endGame();
-        }
+    // Shooting
+    if(frameCount % (player.rapidFire ? 5 : 10) === 0) {
+      if(keys[' '] || keys['arrowup'] || shootingActive) {
+        playerShoot();
       }
-      enemyBullets.splice(i,1);
     }
 
-    // Remove if off screen
-    if(b.y > height + 10 || b.x < -10 || b.x > width + 10) enemyBullets.splice(i,1);
-  });
+    // Update bullets
+    bullets.forEach((b, i) => {
+      b.y -= b.speed;
+      if(b.y < -10) bullets.splice(i,1);
+    });
 
-  // Update explosions
-  explosions.forEach((ex, i) => {
-    ex.r += 2;
-    if(ex.r > ex.maxR) explosions.splice(i,1);
-  });
+    // Update enemies
+    enemies.forEach((e, i) => {
+      e.y += e.speed;
+      e.shootTimer = (e.shootTimer || 0) + 1;
 
-  // Update powerups
-  powerups.forEach((p,i) => {
-    p.y += p.speed;
-    if(p.y > height + p.size) powerups.splice(i,1);
-
-    // Collision with player
-    if(dist(p.x,p.y,player.x,player.y) < p.size + player.width/2){
-      powerupSound.currentTime = 0;
-      if(!muted) powerupSound.play().catch(e => console.log("Audio play failed:", e));
-      
-      if(p.type === 'shield'){
-        player.shield = true;
-        player.shieldEnd = frameCount + 900;
-      } else if(p.type === 'rapidFire'){
-        player.rapidFire = true;
-        player.rapidFireEnd = frameCount + 900;
-      } else if(p.type === 'damageBoost') {
-        player.damageBoost = true;
-        player.damageBoostEnd = frameCount + (p.duration || 900);
-      } else if(p.type === 'tripleShot') {
-        player.tripleShot = true;
-        player.tripleShotEnd = frameCount + 900;
+      // Enemy shoot
+      if(e.shootTimer > e.shootInterval){
+        enemyShoot(e);
+        e.shootTimer = 0;
       }
-      powerups.splice(i,1);
-    }
-  });
 
-  // Powerup duration check
-  if(player.shield && frameCount > player.shieldEnd) player.shield = false;
-  if(player.rapidFire && frameCount > player.rapidFireEnd) player.rapidFire = false;
-  if(player.damageBoost && frameCount > player.damageBoostEnd) player.damageBoost = false;
-  if(player.tripleShot && frameCount > player.tripleShotEnd) player.tripleShot = false;
+      // Remove if out of screen
+      if(e.y > height + e.size) enemies.splice(i,1);
 
-  // Update powerup timer display
-  updatePowerupTimer();
-
-  // Boss spawning
-  if(level % 5 === 0 && bosses.length === 0 && enemies.length === 0){
-    spawnBoss();
-  }
-
-  // Update bosses
-  bosses.forEach((boss, i) => {
-    // Move boss down initially
-    if(boss.y < 100) {
-      boss.y += boss.speed;
-    } else {
-      // Boss movement pattern
-      boss.moveTimer++;
-      
-      // Track player horizontally
-      const trackSpeed = 0.05;
-      boss.x += (player.x - boss.x) * trackSpeed;
-      
-      // Side-to-side movement
-      if(boss.moveTimer > boss.moveInterval) {
-        boss.direction *= -1;
-        boss.moveTimer = 0;
-      }
-      boss.x += boss.direction * 2;
-      
-      // Keep boss on screen
-      boss.x = clamp(boss.x, boss.size/2, width - boss.size/2);
-    }
-
-    // Boss shooting
-    boss.shootTimer++;
-    if(boss.shootTimer > boss.shootInterval){
-      bossShoot(boss);
-      boss.shootTimer = 0;
-    }
-
-    // Collide with player bullets
-    bullets.forEach((b, j) => {
-      if(dist(b.x,b.y,boss.x,boss.y) < boss.size/1.5){
-        boss.health--;
-        bullets.splice(j,1);
-        if(boss.health <= 0){
-          createExplosion(boss.x, boss.y);
-          bosses.splice(i,1);
-          score += 200 * level;
+      // Bullet collision
+      bullets.forEach((b, j) => {
+        let distToEnemy = dist(b.x,b.y, e.x,e.y);
+        if(distToEnemy < e.size/1.5){
+          createExplosion(e.x, e.y);
+          bullets.splice(j,1);
+          enemies.splice(i,1);
+          score += 10 * level;
           scoreText.textContent = "Score: "+score;
-          levelUp();
         }
+      });
+
+      if(e.y > height + e.size) enemies.splice(i,1);
+    });
+
+    // Update enemy bullets
+    enemyBullets.forEach((b,i) => {
+      b.y += b.speedY || b.speed || 5;
+      b.x += b.speedX || 0;
+
+      // Check collision with player
+      let hitRadius = player.width / 2;
+      if(dist(b.x,b.y,player.x,player.y) < b.size + hitRadius){
+        if(!player.shield){
+          let damage = 1; // Default damage
+          if(level >= 150) damage = 3;
+          else if(level >= 50) damage = 2;
+          
+          // Apply damage reduction if active
+          if(player.damageBoost && frameCount < player.damageBoostEnd) {
+            damage = Math.max(1, damage - 2);
+          }
+          
+          health -= damage;
+          updateHealthBar();
+          if(health <= 0){
+            gameOver = true;
+            endGame();
+          }
+        }
+        enemyBullets.splice(i,1);
+      }
+
+      // Remove if off screen
+      if(b.y > height + 10 || b.x < -10 || b.x > width + 10) enemyBullets.splice(i,1);
+    });
+
+    // Update explosions
+    explosions.forEach((ex, i) => {
+      ex.r += 2;
+      if(ex.r > ex.maxR) explosions.splice(i,1);
+    });
+
+    // Update powerups
+    powerups.forEach((p,i) => {
+      p.y += p.speed;
+      if(p.y > height + p.size) powerups.splice(i,1);
+
+      // Collision with player
+      if(dist(p.x,p.y,player.x,player.y) < p.size + player.width/2){
+        powerupSound.currentTime = 0;
+        if(!muted) powerupSound.play();
+        
+        if(p.type === 'shield'){
+          player.shield = true;
+          player.shieldEnd = frameCount + 900;
+        } else if(p.type === 'rapidFire'){
+          player.rapidFire = true;
+          player.rapidFireEnd = frameCount + 900;
+        } else if(p.type === 'damageBoost') {
+          player.damageBoost = true;
+          player.damageBoostEnd = frameCount + (p.duration || 900);
+        } else if(p.type === 'tripleShot') {
+          player.tripleShot = true;
+          player.tripleShotEnd = frameCount + 900;
+        }
+        powerups.splice(i,1);
       }
     });
-  });
 
-  // Level progression - advance after clearing wave
-  if(enemies.length === 0 && bosses.length === 0 && frameCount % 300 === 0){
-    levelUp();
-    spawnWave();
-  }
+    // Powerup duration check
+    if(player.shield && frameCount > player.shieldEnd) player.shield = false;
+    if(player.rapidFire && frameCount > player.rapidFireEnd) player.rapidFire = false;
+    if(player.damageBoost && frameCount > player.damageBoostEnd) player.damageBoost = false;
+    if(player.tripleShot && frameCount > player.tripleShotEnd) player.tripleShot = false;
 
-  // Check mission progress
-  checkMissionProgress();
+    // Update powerup timer display
+    updatePowerupTimer();
 
-  // Update UI
-  updateHealthBar();
+    // Boss spawning
+    if(level % 5 === 0 && bosses.length === 0 && enemies.length === 0){
+      spawnBoss();
+    }
 
-  // Draw everything
-  draw();
+    // Update bosses
+    bosses.forEach((boss, i) => {
+      // Move boss down initially
+      if(boss.y < 100) {
+        boss.y += boss.speed;
+      } else {
+        // Boss movement pattern
+        boss.moveTimer++;
+        
+        // Track player horizontally
+        const trackSpeed = 0.05;
+        boss.x += (player.x - boss.x) * trackSpeed;
+        
+        // Side-to-side movement
+        if(boss.moveTimer > boss.moveInterval) {
+          boss.direction *= -1;
+          boss.moveTimer = 0;
+        }
+        boss.x += boss.direction * 2;
+        
+        // Keep boss on screen
+        boss.x = clamp(boss.x, boss.size/2, width - boss.size/2);
+      }
 
-  // Request next frame
-  if(!gameOver) requestAnimationFrame(update);
-}
+      // Boss shooting
+      boss.shootTimer++;
+      if(boss.shootTimer > boss.shootInterval){
+        bossShoot(boss);
+        boss.shootTimer = 0;
+      }
 
-function levelUp(){
-  level++;
-  levelText.textContent = "Level: " + level;
-  // Increase health every 5 levels (capped at MAX_HEALTH)
-  if(level % 5 === 0){
-    health = Math.min(MAX_HEALTH, health + 3);
+      // Collide with player bullets
+      bullets.forEach((b, j) => {
+        if(dist(b.x,b.y,boss.x,boss.y) < boss.size/1.5){
+          boss.health--;
+          bullets.splice(j,1);
+          if(boss.health <= 0){
+            createExplosion(boss.x, boss.y);
+            bosses.splice(i,1);
+            score += 200 * level;
+            scoreText.textContent = "Score: "+score;
+            levelUp();
+          }
+        }
+      });
+    });
+
+    // Level progression - advance after clearing wave
+    if(enemies.length === 0 && bosses.length === 0 && frameCount % 300 === 0){
+      levelUp();
+      spawnWave();
+    }
+
+    // Update UI
     updateHealthBar();
-  }
-}
 
-function spawnWave(){
-  const count = 5 + Math.floor(level / 2);
-  for(let i=0; i<count; i++){
-    spawnEnemy();
-  }
-  if(level % 3 === 0) spawnPowerup();
-}
+    // Draw everything
+    draw();
 
-function updateHealthBar(){
-  healthFill.style.width = (health / MAX_HEALTH * 100) + '%';
-}
+    // Request next frame
+    if(!gameOver) requestAnimationFrame(update);
+  }
 
-function updatePowerupTimer() {
-  let activePowerups = [];
-  if(player.shield && frameCount < player.shieldEnd) {
-    activePowerups.push(`Shield: ${Math.ceil((player.shieldEnd - frameCount)/60)}s`);
+  function levelUp(){
+    level++;
+    levelText.textContent = "Level: " + level;
+    // Increase health every 5 levels (capped at 12)
+    if(level % 5 === 0){
+      health = Math.min(12, health + 3); // Smaller health increments
+      updateHealthBar();
+    }
   }
-  if(player.rapidFire && frameCount < player.rapidFireEnd) {
-    activePowerups.push(`Rapid Fire: ${Math.ceil((player.rapidFireEnd - frameCount)/60)}s`);
-  }
-  if(player.damageBoost && frameCount < player.damageBoostEnd) {
-    activePowerups.push(`Damage Resist: ${Math.ceil((player.damageBoostEnd - frameCount)/60)}s`);
-  }
-  if(player.tripleShot && frameCount < player.tripleShotEnd) {
-    activePowerups.push(`Triple Shot: ${Math.ceil((player.tripleShotEnd - frameCount)/60)}s`);
-  }
-  
-  powerupTimer.textContent = activePowerups.join(" | ");
-}
 
-// Draw the game scene
-function draw(){
-  // Clear canvas
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, width, height);
+  function spawnWave(){
+    const count = 5 + Math.floor(level / 2);
+    for(let i=0; i<count; i++){
+      spawnEnemy();
+    }
+    if(level % 3 === 0) spawnPowerup();
+  }
 
-  // Draw stars
-  starLayers.forEach(layer => {
-    ctx.fillStyle = 'white';
-    layer.stars.forEach(s => {
+  function updateHealthBar(){
+    healthFill.style.width = (health / 12 * 100) + '%'; // Updated to 12 max health
+  }
+
+  function updatePowerupTimer() {
+    let activePowerups = [];
+    if(player.shield && frameCount < player.shieldEnd) {
+      activePowerups.push(`Shield: ${Math.ceil((player.shieldEnd - frameCount)/60)}s`);
+    }
+    if(player.rapidFire && frameCount < player.rapidFireEnd) {
+      activePowerups.push(`Rapid Fire: ${Math.ceil((player.rapidFireEnd - frameCount)/60)}s`);
+    }
+    if(player.damageBoost && frameCount < player.damageBoostEnd) {
+      activePowerups.push(`Damage Resist: ${Math.ceil((player.damageBoostEnd - frameCount)/60)}s`);
+    }
+    if(player.tripleShot && frameCount < player.tripleShotEnd) {
+      activePowerups.push(`Triple Shot: ${Math.ceil((player.tripleShotEnd - frameCount)/60)}s`);
+    }
+    
+    powerupTimer.textContent = activePowerups.join(" | ");
+  }
+
+  // Draw the game scene
+  function draw(){
+    ctx.clearRect(0,0,width,height);
+
+    // Draw stars
+    starLayers.forEach(layer => {
+      ctx.fillStyle = 'white';
+      layer.stars.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fill();
+      });
+    });
+
+    // Draw player ship
+    ctx.save();
+    ctx.translate(player.x, player.y);
+
+    // Shield ring
+    if(player.shield){
+      ctx.strokeStyle = 'cyan';
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.arc(0, 0, player.width, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Draw spaceship
+    ctx.drawImage(spaceshipImg, -player.width/2, -player.height/2, player.width, player.height);
+    ctx.restore();
+
+    // Draw player bullets
+    ctx.fillStyle = 'yellow';
+    bullets.forEach(b => {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.size, 0, Math.PI*2);
       ctx.fill();
     });
-  });
 
-  // Draw player ship
-  ctx.save();
-  ctx.translate(player.x, player.y);
+    // Draw enemies
+    enemies.forEach(e => {
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.size/2, 0, Math.PI*2);
+      ctx.fill();
+    });
 
-  // Shield ring
-  if(player.shield){
-    ctx.strokeStyle = 'cyan';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(0, 0, player.width, 0, Math.PI * 2);
-    ctx.stroke();
+    // Draw enemy bullets
+    ctx.fillStyle = 'orange';
+    enemyBullets.forEach(b => {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.size, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    // Draw explosions
+    explosions.forEach(ex => {
+      const alpha = 1 - ex.r / ex.maxR;
+      ctx.strokeStyle = `rgba(255,165,0,${alpha})`;
+      ctx.beginPath();
+      ctx.arc(ex.x, ex.y, ex.r, 0, Math.PI*2);
+      ctx.stroke();
+    });
+
+    // Draw powerups
+    powerups.forEach(p => {
+      if(p.type === 'shield') {
+        ctx.fillStyle = 'cyan';
+      } else if(p.type === 'rapidFire') {
+        ctx.fillStyle = 'lime';
+      } else if(p.type === 'damageBoost') {
+        ctx.fillStyle = 'gold';
+      } else if(p.type === 'tripleShot') {
+        ctx.fillStyle = 'magenta';
+      }
+      
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size/2, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = 'black';
+      ctx.font = '18px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(
+        p.type === 'shield' ? 'S' : 
+        p.type === 'rapidFire' ? 'R' : 
+        p.type === 'damageBoost' ? 'D' : 'T', 
+        p.x, p.y
+      );
+    });
+
+    // Draw bosses
+    bosses.forEach(boss => {
+      // Boss body
+      ctx.fillStyle = 'purple';
+      ctx.beginPath();
+      ctx.arc(boss.x, boss.y, boss.size/2, 0, Math.PI*2);
+      ctx.fill();
+
+      // Boss eyes
+      ctx.fillStyle = 'yellow';
+      ctx.beginPath();
+      ctx.arc(boss.x - 20, boss.y - 10, 8, 0, Math.PI*2);
+      ctx.arc(boss.x + 20, boss.y - 10, 8, 0, Math.PI*2);
+      ctx.fill();
+      
+      // Boss mouth
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(boss.x, boss.y + 10, 15, 0.1*Math.PI, 0.9*Math.PI);
+      ctx.stroke();
+
+      // Boss health bar
+      ctx.fillStyle = 'red';
+      const barWidth = boss.size;
+      const healthRatio = boss.health / (50 + level * 20);
+      ctx.fillRect(boss.x - barWidth/2, boss.y - boss.size/2 - 20, barWidth * healthRatio, 10);
+      ctx.strokeStyle = 'white';
+      ctx.strokeRect(boss.x - barWidth/2, boss.y - boss.size/2 - 20, barWidth, 10);
+    });
   }
 
-  // Draw spaceship
-  if (spaceshipImg.complete) {
-    ctx.drawImage(spaceshipImg, -player.width/2, -player.height/2, player.width, player.height);
-  } else {
-    // Fallback if image fails to load
-    ctx.fillStyle = 'blue';
-    ctx.beginPath();
-    ctx.moveTo(0, -player.height/2);
-    ctx.lineTo(-player.width/2, player.height/2);
-    ctx.lineTo(player.width/2, player.height/2);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Draw cockpit
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.arc(0, player.height/4, 5, 0, Math.PI*2);
-    ctx.fill();
+  // End game screen
+  function endGame(){
+    finalScoreText.textContent = score;
+    finalLevelText.textContent = level;
+    gameOverScreen.style.display = 'block';
+    bgMusic.pause();
   }
-  ctx.restore();
 
-  // Draw player bullets
-  ctx.fillStyle = 'yellow';
-  bullets.forEach(b => {
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, b.size, 0, Math.PI*2);
-    ctx.fill();
-  });
-
-  // Draw enemies
-  ctx.fillStyle = 'red';
-  enemies.forEach(e => {
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, e.size/2, 0, Math.PI*2);
-    ctx.fill();
-  });
-
-  // Draw enemy bullets
-  ctx.fillStyle = 'orange';
-  enemyBullets.forEach(b => {
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, b.size, 0, Math.PI*2);
-    ctx.fill();
-  });
-
-  // Draw explosions
-  explosions.forEach(ex => {
-    const alpha = 1 - ex.r / ex.maxR;
-    ctx.strokeStyle = `rgba(255,165,0,${alpha})`;
-    ctx.beginPath();
-    ctx.arc(ex.x, ex.y, ex.r, 0, Math.PI*2);
-    ctx.stroke();
-  });
-
-  // Draw powerups
-  powerups.forEach(p => {
-    if(p.type === 'shield') {
-      ctx.fillStyle = 'cyan';
-    } else if(p.type === 'rapidFire') {
-      ctx.fillStyle = 'lime';
-    } else if(p.type === 'damageBoost') {
-      ctx.fillStyle = 'gold';
-    } else if(p.type === 'tripleShot') {
-      ctx.fillStyle = 'magenta';
-    }
-    
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size/2, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = 'black';
-    ctx.font = '18px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(
-      p.type === 'shield' ? 'S' : 
-      p.type === 'rapidFire' ? 'R' : 
-      p.type === 'damageBoost' ? 'D' : 'T', 
-      p.x, p.y
-    );
-  });
-
-  // Draw bosses
-  bosses.forEach(boss => {
-    // Boss body
-    ctx.fillStyle = 'purple';
-    ctx.beginPath();
-    ctx.arc(boss.x, boss.y, boss.size/2, 0, Math.PI*2);
-    ctx.fill();
-
-    // Boss eyes
-    ctx.fillStyle = 'yellow';
-    ctx.beginPath();
-    ctx.arc(boss.x - 20, boss.y - 10, 8, 0, Math.PI*2);
-    ctx.arc(boss.x + 20, boss.y - 10, 8, 0, Math.PI*2);
-    ctx.fill();
-    
-    // Boss mouth
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(boss.x, boss.y + 10, 15, 0.1*Math.PI, 0.9*Math.PI);
-    ctx.stroke();
-
-    // Boss health bar
-    ctx.fillStyle = 'red';
-    const barWidth = boss.size;
-    const healthRatio = boss.health / (50 + level * 20);
-    ctx.fillRect(boss.x - barWidth/2, boss.y - boss.size/2 - 20, barWidth * healthRatio, 10);
-    ctx.strokeStyle = 'white';
-    ctx.strokeRect(boss.x - barWidth/2, boss.y - boss.size/2 - 20, barWidth, 10);
-  });
-}
-
-// End game screen
-function endGame(){
-  finalScoreText.textContent = score;
-  finalLevelText.textContent = level;
-  gameOverScreen.style.display = 'flex';
-  bgMusic.pause();
-}
-
-// Initial setup
-resizeCanvas();
-initMissions();
-showScreen('startScreen');
-
-// Draw initial screen
-ctx.fillStyle = 'black';
-ctx.fillRect(0, 0, width, height);
-ctx.fillStyle = 'white';
-ctx.font = '24px Arial';
-ctx.textAlign = 'center';
-ctx.fillText('Loading Game...', width/2, height/2);
+  // Initial setup
+  initialSpawn();
+})();
 </script>
 </body>
 </html>
