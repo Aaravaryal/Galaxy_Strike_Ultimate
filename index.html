@@ -59,10 +59,19 @@
   }
   #scoreText {
     position: absolute;
-    bottom: 10px;
-    left: 20px;
+    top: 10px;
+    right: 20px;
     font-weight: bold;
     font-size: 18px;
+    pointer-events: none;
+  }
+  #missionText {
+    position: absolute;
+    top: 80px;
+    left: 20px;
+    font-weight: bold;
+    font-size: 16px;
+    color: yellow;
     pointer-events: none;
   }
   #gameOverScreen {
@@ -177,8 +186,60 @@
     cursor: pointer;
     border-radius: 8px;
     margin: 10px;
+    width: 200px;
+    text-align: center;
   }
   #startScreen button:hover {
+    background: #0056b3;
+  }
+  #missionScreen {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    z-index: 11;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .mission-card {
+    background: #222;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+    text-align: center;
+    display: inline-block;
+    width: 200px;
+    vertical-align: top;
+  }
+  .mission-card.locked {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .mission-card h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+  }
+  .mission-card p {
+    margin: 5px 0;
+    font-size: 14px;
+  }
+  #missionBackButton {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #007bff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  #missionBackButton:hover {
     background: #0056b3;
   }
   #powerupTimer {
@@ -202,27 +263,94 @@
   <div id="levelText">Level: 1</div>
   <div id="scoreText">Score: 0</div>
   <div id="powerupTimer"></div>
+  <div id="missionText"></div>
 </div>
 
 <div id="gameOverScreen">
   <p>💥 Game Over!</p>
   <p>Your Score: <span id="finalScore">0</span></p>
   <p>Level Reached: <span id="finalLevel">1</span></p>
+  <p>Missions Completed: <span id="missionsCompleted">0</span></p>
   <button onclick="location.reload()">Restart</button>
 </div>
 
 <div id="startScreen">
   <h1>GALAXY STRIKE ULTIMATE</h1>
   <button id="startButton">START GAME</button>
+  <button id="missionsButton">MISSIONS</button>
   <button id="muteButton">MUTE SOUND</button>
+</div>
+
+<div id="missionScreen">
+  <div class="mission-card" data-mission="1">
+    <h3>1. Basic Training</h3>
+    <p>Reach level 50</p>
+    <p>Reward: Unlock Mission 2</p>
+  </div>
+  <div class="mission-card locked" data-mission="2">
+    <h3>2. Combat Initiation</h3>
+    <p>Reach level 50</p>
+    <p>Reward: Unlock Mission 3</p>
+  </div>
+  <div class="mission-card locked" data-mission="3">
+    <h3>3. Space Cadet</h3>
+    <p>Reach level 50</p>
+    <p>Reward: Unlock Mission 4</p>
+  </div>
+  <div class="mission-card locked" data-mission="4">
+    <h3>4. Asteroid Runner</h3>
+    <p>Reach level 50</p>
+    <p>Reward: Unlock Mission 5</p>
+  </div>
+  <div class="mission-card locked" data-mission="5">
+    <h3>5. Galaxy Defender</h3>
+    <p>Reach level 50</p>
+    <p>Reward: Unlock Mission 6</p>
+  </div>
+  <div class="mission-card locked" data-mission="6">
+    <h3>6. Elite Striker</h3>
+    <p>Reach level 50 (Limited Health)</p>
+    <p>Reward: Unlock Mission 7</p>
+  </div>
+  <div class="mission-card locked" data-mission="7">
+    <h3>7. Boss Hunter</h3>
+    <p>Reach level 50 (Faster Bosses)</p>
+    <p>Reward: Unlock Mission 8</p>
+  </div>
+  <div class="mission-card locked" data-mission="8">
+    <h3>8. Precision Pilot</h3>
+    <p>Reach level 50 (Slower Ship)</p>
+    <p>Reward: Unlock Mission 9</p>
+  </div>
+  <div class="mission-card locked" data-mission="9">
+    <h3>9. Ultimate Challenge</h3>
+    <p>Reach level 50 (Hardcore Mode)</p>
+    <p>Reward: Unlock Mission 10</p>
+  </div>
+  <div class="mission-card locked" data-mission="10">
+    <h3>10. Galaxy Champion</h3>
+    <p>Reach level 50 (Nightmare Mode)</p>
+    <p>Reward: Ultimate Badge</p>
+  </div>
+  <div class="mission-card locked" data-mission="11">
+    <h3>11. Cosmic Warrior</h3>
+    <p>Reach level 50 (Extreme Mode)</p>
+    <p>Reward: Legendary Badge</p>
+  </div>
+  <div class="mission-card locked" data-mission="12">
+    <h3>12. Universal Legend</h3>
+    <p>Reach level 50 (Impossible Mode)</p>
+    <p>Reward: Universal Badge</p>
+  </div>
+  <button id="missionBackButton">BACK</button>
 </div>
 
 <div id="touchControls">
   <div id="leftControls">
-    <div id="shootButton">FIRE</div>
     <div class="arrow-btn" id="leftBtn">←</div>
   </div>
   <div id="rightControls">
+    <div id="shootButton">FIRE</div>
     <div class="arrow-btn" id="rightBtn">→</div>
   </div>
 </div>
@@ -231,12 +359,16 @@
 <audio id="explosionSound" src="https://www.soundjay.com/explosion/sounds/explosion-01.mp3" preload="auto"></audio>
 <audio id="powerupSound" src="https://www.soundjay.com/button/sounds/button-16.mp3" preload="auto"></audio>
 <audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop preload="auto"></audio>
+<audio id="missionSound" src="https://www.soundjay.com/button/sounds/button-09.mp3" preload="auto"></audio>
 
 <script>
 (() => {
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
   const startScreen = document.getElementById('startScreen');
+  const missionsButton = document.getElementById('missionsButton');
+  const missionScreen = document.getElementById('missionScreen');
+  const missionBackButton = document.getElementById('missionBackButton');
   const startButton = document.getElementById('startButton');
   const muteButton = document.getElementById('muteButton');
 
@@ -244,8 +376,10 @@
   const healthFill = document.getElementById('healthFill');
   const levelText = document.getElementById('levelText');
   const scoreText = document.getElementById('scoreText');
+  const missionText = document.getElementById('missionText');
   const finalScoreText = document.getElementById('finalScore');
   const finalLevelText = document.getElementById('finalLevel');
+  const missionsCompletedText = document.getElementById('missionsCompleted');
   const gameOverScreen = document.getElementById('gameOverScreen');
   const powerupTimer = document.getElementById('powerupTimer');
 
@@ -253,6 +387,7 @@
   const shootSound = document.getElementById('shootSound');
   const explosionSound = document.getElementById('explosionSound');
   const powerupSound = document.getElementById('powerupSound');
+  const missionSound = document.getElementById('missionSound');
   const bgMusic = document.getElementById('bgMusic');
   let muted = false;
 
@@ -262,12 +397,80 @@
   let height = canvas.height = window.innerHeight;
   let score = 0;
   let level = 1;
-  let health = 12; // Changed from 15 to 12
+  let health = 12;
   let gameOver = false;
   let frameCount = 0;
+  let missionsCompleted = 0;
+  let unlockedMissions = [1]; // Start with Mission 1 unlocked
+
+  // Mission System
+  let currentMission = null;
+  let missionProgress = 0;
+
+  function updateMissionDisplay() {
+    if (currentMission) {
+      missionText.textContent = `${currentMission.description} (${currentMission.progress}/${currentMission.target})`;
+    } else {
+      missionText.textContent = '';
+    }
+  }
+
+  function completeMission() {
+    score += currentMission.reward;
+    scoreText.textContent = "Score: " + score;
+    missionsCompleted++;
+    missionSound.currentTime = 0;
+    if (!muted) missionSound.play();
+    unlockedMissions.push(currentMission.id + 1); // Unlock next mission
+    updateMissionScreen();
+    currentMission = null;
+    setTimeout(generateMission, 1000);
+  }
+
+  function generateMission(id) {
+    const missions = [
+      { id: 1, type: 'reachLevel', description: 'Reach level 50', target: 50, reward: 100, condition: () => true },
+      { id: 2, type: 'reachLevel', description: 'Reach level 50', target: 50, reward: 100, condition: () => unlockedMissions.includes(2) },
+      { id: 3, type: 'reachLevel', description: 'Reach level 50', target: 50, reward: 100, condition: () => unlockedMissions.includes(3) },
+      { id: 4, type: 'reachLevel', description: 'Reach level 50', target: 50, reward: 100, condition: () => unlockedMissions.includes(4) },
+      { id: 5, type: 'reachLevel', description: 'Reach level 50', target: 50, reward: 100, condition: () => unlockedMissions.includes(5) },
+      { id: 6, type: 'reachLevel', description: 'Reach level 50 (Limited Health)', target: 50, reward: 100, condition: () => unlockedMissions.includes(6) },
+      { id: 7, type: 'reachLevel', description: 'Reach level 50 (Faster Bosses)', target: 50, reward: 100, condition: () => unlockedMissions.includes(7) },
+      { id: 8, type: 'reachLevel', description: 'Reach level 50 (Slower Ship)', target: 50, reward: 100, condition: () => unlockedMissions.includes(8) },
+      { id: 9, type: 'reachLevel', description: 'Reach level 50 (Hardcore Mode)', target: 50, reward: 100, condition: () => unlockedMissions.includes(9) },
+      { id: 10, type: 'reachLevel', description: 'Reach level 50 (Nightmare Mode)', target: 50, reward: 100, condition: () => unlockedMissions.includes(10) },
+      { id: 11, type: 'reachLevel', description: 'Reach level 50 (Extreme Mode)', target: 50, reward: 100, condition: () => unlockedMissions.includes(11) },
+      { id: 12, type: 'reachLevel', description: 'Reach level 50 (Impossible Mode)', target: 50, reward: 100, condition: () => unlockedMissions.includes(12) }
+    ];
+    const mission = missions.find(m => m.id === id);
+    if (mission && mission.condition()) {
+      currentMission = { ...mission, progress: 0, startFrame: frameCount };
+      missionProgress = 0;
+      updateMissionDisplay();
+    }
+  }
+
+  function updateMissionScreen() {
+    document.querySelectorAll('.mission-card').forEach(card => {
+      const missionId = parseInt(card.getAttribute('data-mission'));
+      if (unlockedMissions.includes(missionId)) {
+        card.classList.remove('locked');
+      } else {
+        card.classList.add('locked');
+      }
+    });
+  }
 
   // Event Listeners
   startButton.addEventListener('click', startGame);
+  missionsButton.addEventListener('click', () => {
+    missionScreen.style.display = 'block';
+    startScreen.style.display = 'none';
+  });
+  missionBackButton.addEventListener('click', () => {
+    missionScreen.style.display = 'none';
+    startScreen.style.display = 'block';
+  });
   muteButton.addEventListener('click', toggleMute);
   window.addEventListener('resize', () => {
     width = canvas.width = window.innerWidth;
@@ -279,6 +482,7 @@
     startScreen.style.display = 'none';
     bgMusic.volume = muted ? 0 : 0.3;
     bgMusic.play();
+    generateMission(unlockedMissions[unlockedMissions.length - 1]); // Start with the latest unlocked mission
     initialSpawn();
     update();
   }
@@ -287,7 +491,7 @@
     muted = !muted;
     muteButton.textContent = muted ? "UNMUTE SOUND" : "MUTE SOUND";
     bgMusic.volume = muted ? 0 : 0.3;
-    if(!muted && !bgMusic.paused) bgMusic.play();
+    if (!muted && !bgMusic.paused) bgMusic.play();
   }
 
   // Controls
@@ -393,12 +597,10 @@
       if(!muted) shootSound.play();
       
       if(player.tripleShot && frameCount < player.tripleShotEnd) {
-        // Triple shot pattern
         bullets.push({x: player.x - 15, y: player.y - player.height/2, size: 6, speed: 12});
         bullets.push({x: player.x, y: player.y - player.height/2, size: 6, speed: 12});
         bullets.push({x: player.x + 15, y: player.y - player.height/2, size: 6, speed: 12});
       } else {
-        // Normal shot
         bullets.push({x: player.x, y: player.y - player.height/2, size: 6, speed: 12});
       }
     }
@@ -416,12 +618,10 @@
 
   // Boss Shoot Pattern
   function bossShoot(boss) {
-    // Calculate angle to player
     const dx = player.x - boss.x;
     const dy = player.y - boss.y;
     const angle = Math.atan2(dy, dx);
     
-    // Shoot bullets in player's direction
     for (let i = -1; i <= 1; i++) {
       const spread = Math.PI / 8 * i;
       const speed = 5;
@@ -443,14 +643,14 @@
     if(!muted) explosionSound.play();
   }
 
-  // Spawn enemy with CONSTANT speed
+  // Spawn enemy
   function spawnEnemy() {
     const size = 40;
     enemies.push({
       x: randomRange(size/2, width - size/2),
       y: -size,
       size,
-      speed: 1, // Constant speed (no level scaling)
+      speed: 1,
       shootTimer: 0,
       shootInterval: 120 + Math.random() * 60,
     });
@@ -500,7 +700,6 @@
       moveInterval: 60,
     });
     
-    // 70% chance to spawn special powerup
     if(Math.random() < 0.7) {
       spawnSpecialPowerup();
     }
@@ -522,6 +721,15 @@
     if(!gameStarted || gameOver) return;
 
     frameCount++;
+
+    // Update mission progress
+    if (currentMission && currentMission.type === 'reachLevel') {
+      currentMission.progress = level;
+      updateMissionDisplay();
+      if (currentMission.progress >= currentMission.target) {
+        completeMission();
+      }
+    }
 
     // Update stars
     starLayers.forEach(layer => {
@@ -557,16 +765,13 @@
       e.y += e.speed;
       e.shootTimer = (e.shootTimer || 0) + 1;
 
-      // Enemy shoot
       if(e.shootTimer > e.shootInterval){
         enemyShoot(e);
         e.shootTimer = 0;
       }
 
-      // Remove if out of screen
       if(e.y > height + e.size) enemies.splice(i,1);
 
-      // Bullet collision
       bullets.forEach((b, j) => {
         let distToEnemy = dist(b.x,b.y, e.x,e.y);
         if(distToEnemy < e.size/1.5){
@@ -586,15 +791,13 @@
       b.y += b.speedY || b.speed || 5;
       b.x += b.speedX || 0;
 
-      // Check collision with player
       let hitRadius = player.width / 2;
       if(dist(b.x,b.y,player.x,player.y) < b.size + hitRadius){
         if(!player.shield){
-          let damage = 1; // Default damage
+          let damage = 1;
           if(level >= 150) damage = 3;
           else if(level >= 50) damage = 2;
           
-          // Apply damage reduction if active
           if(player.damageBoost && frameCount < player.damageBoostEnd) {
             damage = Math.max(1, damage - 2);
           }
@@ -609,7 +812,6 @@
         enemyBullets.splice(i,1);
       }
 
-      // Remove if off screen
       if(b.y > height + 10 || b.x < -10 || b.x > width + 10) enemyBullets.splice(i,1);
     });
 
@@ -624,7 +826,6 @@
       p.y += p.speed;
       if(p.y > height + p.size) powerups.splice(i,1);
 
-      // Collision with player
       if(dist(p.x,p.y,player.x,player.y) < p.size + player.width/2){
         powerupSound.currentTime = 0;
         if(!muted) powerupSound.play();
@@ -662,36 +863,29 @@
 
     // Update bosses
     bosses.forEach((boss, i) => {
-      // Move boss down initially
       if(boss.y < 100) {
         boss.y += boss.speed;
       } else {
-        // Boss movement pattern
         boss.moveTimer++;
         
-        // Track player horizontally
         const trackSpeed = 0.05;
         boss.x += (player.x - boss.x) * trackSpeed;
         
-        // Side-to-side movement
         if(boss.moveTimer > boss.moveInterval) {
           boss.direction *= -1;
           boss.moveTimer = 0;
         }
         boss.x += boss.direction * 2;
         
-        // Keep boss on screen
         boss.x = clamp(boss.x, boss.size/2, width - boss.size/2);
       }
 
-      // Boss shooting
       boss.shootTimer++;
       if(boss.shootTimer > boss.shootInterval){
         bossShoot(boss);
         boss.shootTimer = 0;
       }
 
-      // Collide with player bullets
       bullets.forEach((b, j) => {
         if(dist(b.x,b.y,boss.x,boss.y) < boss.size/1.5){
           boss.health--;
@@ -707,7 +901,7 @@
       });
     });
 
-    // Level progression - advance after clearing wave
+    // Level progression
     if(enemies.length === 0 && bosses.length === 0 && frameCount % 300 === 0){
       levelUp();
       spawnWave();
@@ -719,17 +913,18 @@
     // Draw everything
     draw();
 
-    // Request next frame
     if(!gameOver) requestAnimationFrame(update);
   }
 
   function levelUp(){
     level++;
     levelText.textContent = "Level: " + level;
-    // Increase health every 5 levels (capped at 12)
     if(level % 5 === 0){
-      health = Math.min(12, health + 3); // Smaller health increments
+      health = Math.min(12, health + 3);
       updateHealthBar();
+    }
+    if (currentMission && currentMission.type === 'reachLevel' && level >= currentMission.target) {
+      completeMission();
     }
   }
 
@@ -742,7 +937,7 @@
   }
 
   function updateHealthBar(){
-    healthFill.style.width = (health / 12 * 100) + '%'; // Updated to 12 max health
+    healthFill.style.width = (health / 12 * 100) + '%';
   }
 
   function updatePowerupTimer() {
@@ -763,11 +958,9 @@
     powerupTimer.textContent = activePowerups.join(" | ");
   }
 
-  // Draw the game scene
   function draw(){
     ctx.clearRect(0,0,width,height);
 
-    // Draw stars
     starLayers.forEach(layer => {
       ctx.fillStyle = 'white';
       layer.stars.forEach(s => {
@@ -777,11 +970,9 @@
       });
     });
 
-    // Draw player ship
     ctx.save();
     ctx.translate(player.x, player.y);
 
-    // Shield ring
     if(player.shield){
       ctx.strokeStyle = 'cyan';
       ctx.lineWidth = 4;
@@ -790,11 +981,9 @@
       ctx.stroke();
     }
 
-    // Draw spaceship
     ctx.drawImage(spaceshipImg, -player.width/2, -player.height/2, player.width, player.height);
     ctx.restore();
 
-    // Draw player bullets
     ctx.fillStyle = 'yellow';
     bullets.forEach(b => {
       ctx.beginPath();
@@ -802,7 +991,6 @@
       ctx.fill();
     });
 
-    // Draw enemies
     enemies.forEach(e => {
       ctx.fillStyle = 'red';
       ctx.beginPath();
@@ -810,7 +998,6 @@
       ctx.fill();
     });
 
-    // Draw enemy bullets
     ctx.fillStyle = 'orange';
     enemyBullets.forEach(b => {
       ctx.beginPath();
@@ -818,7 +1005,6 @@
       ctx.fill();
     });
 
-    // Draw explosions
     explosions.forEach(ex => {
       const alpha = 1 - ex.r / ex.maxR;
       ctx.strokeStyle = `rgba(255,165,0,${alpha})`;
@@ -827,7 +1013,6 @@
       ctx.stroke();
     });
 
-    // Draw powerups
     powerups.forEach(p => {
       if(p.type === 'shield') {
         ctx.fillStyle = 'cyan';
@@ -854,29 +1039,24 @@
       );
     });
 
-    // Draw bosses
     bosses.forEach(boss => {
-      // Boss body
       ctx.fillStyle = 'purple';
       ctx.beginPath();
       ctx.arc(boss.x, boss.y, boss.size/2, 0, Math.PI*2);
       ctx.fill();
 
-      // Boss eyes
       ctx.fillStyle = 'yellow';
       ctx.beginPath();
       ctx.arc(boss.x - 20, boss.y - 10, 8, 0, Math.PI*2);
       ctx.arc(boss.x + 20, boss.y - 10, 8, 0, Math.PI*2);
       ctx.fill();
       
-      // Boss mouth
       ctx.strokeStyle = 'red';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(boss.x, boss.y + 10, 15, 0.1*Math.PI, 0.9*Math.PI);
       ctx.stroke();
 
-      // Boss health bar
       ctx.fillStyle = 'red';
       const barWidth = boss.size;
       const healthRatio = boss.health / (50 + level * 20);
@@ -886,16 +1066,16 @@
     });
   }
 
-  // End game screen
   function endGame(){
     finalScoreText.textContent = score;
     finalLevelText.textContent = level;
+    missionsCompletedText.textContent = missionsCompleted;
     gameOverScreen.style.display = 'block';
     bgMusic.pause();
   }
 
-  // Initial setup
   initialSpawn();
+  updateMissionScreen();
 })();
 </script>
 </body>
